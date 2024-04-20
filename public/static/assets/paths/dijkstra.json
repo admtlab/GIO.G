@@ -1,0 +1,84 @@
+{
+  "stats": {
+    "time_total" : 794288.6892494295,
+    "time_indoor" : 73501.16595249956,
+    "time_outdoor" : 720787.5232969299,
+    "congestion_average" : 1.0083832200083354,
+    "congestion_max" : 2.381716100467901,
+    "congestion_min" : 0.3649496604512305
+  },
+  "path": 
+  [ {
+    "id" : -1,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : -1,
+      "x" : 1,
+      "y" : 1,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  }, {
+    "id" : 8,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : 1,
+      "x" : 3.0582658896108956,
+      "y" : 1.7258805413810328,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  }, {
+    "id" : 8,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : 2,
+      "x" : 2.8176461891267404,
+      "y" : 1.7191997556181966,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  }, {
+    "id" : 26,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : 4,
+      "x" : 3.3400655256793472,
+      "y" : 5.029751878352927,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  }, {
+    "id" : 26,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : 1,
+      "x" : 3.0580190325587333,
+      "y" : 4.633682245302318,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  }, {
+    "id" : -2,
+    "x" : -1,
+    "y" : -1,
+    "entrances" : [ {
+      "id" : -1,
+      "x" : 6,
+      "y" : 6,
+      "accessible" : 1
+    } ],
+    "congestion_type" : "none",
+    "congestion" : [ ]
+  } ]
+}

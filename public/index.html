@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GIO.G</title>
+
+  <link rel="stylesheet" href="/static/vendor/nouislider@15.7.1/nouislider.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+  <script type="text/javascript" src="/static/vendor/konva@9.3.6/konva.min.js"></script>
+  <script type="text/javascript" src="/static/vendor/tinyqueue@2.0.3/tinyqueue.min.js"></script>
+  <script type="text/javascript" src="/static/vendor/polylabel@1.1.0/polylabel.js"></script>
+  <script type="text/javascript" src="/static/vendor/nouislider@15.7.1/nouislider.min.js"></script>
+
+</head>
+<body>
+
+<div id="about-overlay">
+  <div id="about-page">
+
+    <div id="about-navbar-container">
+      <div id="about-navbar">
+        <div id="about-navbar-contributors-button" class="about-navbar-item about-navbar-item-active" onclick="handle_about_navbar_button(this)">Contributors</div>
+        <div class="about-navbar-separator"></div>
+        <div id="about-navbar-json-button" class="about-navbar-item" onclick="handle_about_navbar_button(this)">JSON Objects</div>
+        <div class="about-navbar-separator"></div>
+        <div id="about-navbar-x" onclick="toggle_about_visibility()">
+          <i class="material-icons">close</i>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-contents-scroll">
+      <div id="about-contents-container">
+
+        <div id="about-contributors-content" class="about-content">
+          <div id="about-contributors-container">
+            <div class="about-contributor">
+              <div class="about-contributor-name">Vasilis E. Sarris</div>
+              <div class="about-contributor-department">Dept. of Computer Science</div>
+              <div class="about-contributor-org">University of Pittsburgh</div>
+              <div class="about-contributor-location">Pittsburgh, USA</div>
+              <div class="about-contributor-email">v.sarris@pitt.edu</div>
+            </div>
+            <div class="about-contributor">
+              <div class="about-contributor-name">Connor P. Sweeney</div>
+              <div class="about-contributor-department">Dept. of Computer Science</div>
+              <div class="about-contributor-org">University of Pittsburgh</div>
+              <div class="about-contributor-location">Pittsburgh, USA</div>
+              <div class="about-contributor-email">cps43@pitt.edu</div>
+            </div>
+            <div class="about-contributor">
+              <div class="about-contributor-name">Sean M. Linton</div>
+              <div class="about-contributor-department">Dept. of Computer Science</div>
+              <div class="about-contributor-org">University of Pittsburgh</div>
+              <div class="about-contributor-location">Pittsburgh, USA</div>
+              <div class="about-contributor-email">sean.linton@pitt.edu</div>
+            </div>
+            <div class="about-contributor">
+              <div class="about-contributor-name">Brian T. Nixon</div>
+              <div class="about-contributor-department">Dept. of Computer Science</div>
+              <div class="about-contributor-org">University of Pittsburgh</div>
+              <div class="about-contributor-location">Pittsburgh, USA</div>
+              <div class="about-contributor-email">nixon.b@cs.pitt.edu</div>
+            </div>
+            <div class="about-contributor">
+              <div class="about-contributor-name">Panos K. Chrysanthis</div>
+              <div class="about-contributor-department">Dept. of Computer Science</div>
+              <div class="about-contributor-org">University of Pittsburgh</div>
+              <div class="about-contributor-location">Pittsburgh, USA</div>
+              <div class="about-contributor-email">panos@cs.pitt.edu</div>
+            </div>
+            <div class="about-contributor">
+              <div class="about-contributor-name">Constantinos Costa</div>
+              <div class="about-contributor-org">Rinnoco Ltd.</div>
+              <div class="about-contributor-location">Limassol, Cyprus</div>
+              <div class="about-contributor-email">costa.c@rinnoco.com</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="about-json-content" class="about-content">
+          <div id="about-json-container">
+
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">Building</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">id:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">x:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">y:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">entrances:</span>
+                  <span class="about-json-obj-value">Array[Entrance]</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">congestion_type:</span>
+                  <span class="about-json-obj-value">Array[Congestion]</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">congestion:</span>
+                  <span class="about-json-obj-value">Array[Congestion]</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">merged_x:</span>
+                  <span class="about-json-obj-value">Array[Int]</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">merged_y:</span>
+                  <span class="about-json-obj-value">Array[Int]</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">Congestion</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">id:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">timestep:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">lower:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">upper:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">min:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">max:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">avg:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">stdDev:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">Entrance</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">id:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">x:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">y:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">accessible:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">GraphConfig</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">num_buildings:</span>
+                  <span class="about-json-obj-value">Int</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">coverage:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">clustering:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">constant_congestion:</span>
+                  <span class="about-json-obj-value">Boolean</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">high_con:</span>
+                  <span class="about-json-obj-value">Boolean</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">med_con:</span>
+                  <span class="about-json-obj-value">Boolean</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">low_con:</span>
+                  <span class="about-json-obj-value">Boolean</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">PathConfig</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">algorithm:</span>
+                  <span class="about-json-obj-value">String</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">accessible:</span>
+                  <span class="about-json-obj-value">Boolean</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">start_x:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">start_y:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">end_x:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">end_y:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="about-json-obj-container">
+              <div class="about-json-obj-title">PathStats</div>
+              <div class="about-json-obj-items-container">
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">time_total:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">time_indoor:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">time_outdoor:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">congestion_average:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">congestion_max:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+                <div class="about-json-obj-item">
+                  <span class="about-json-obj-key">congestion_min:</span>
+                  <span class="about-json-obj-value">Double</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-footer">
+      <div id="about-admt">
+        <span id="about-admt-text">ADMT Lab:</span>
+        <span id="about-admt-link"><a href="https://db.cs.pitt.edu/">https://db.cs.pitt.edu/</a></span>
+      </div>
+      <div id="about-copyright">
+        <span id="about-copyright-text">Copyright © </span>
+        <span id="about-copyright-year">2024</span>
+      </div>    
+    </div>
+  </div>
+</div>
+
+<div id="navbar">
+
+  <div id="navbar-admt-container">
+    <div id="navbar-logos">
+      <a href="https://db.cs.pitt.edu/"><img src="/static/assets/logos/admt.png" width="50" height="50" alt=""></a>
+      <img src="/static/assets/logos/pitt.png" width="48" height="48" alt="">
+    </div>
+    <div id="navbar-admt-text">
+      <span id="navbar-admt-title" class="navbar-text">ADMT Lab</span>
+      <span id="navbar-copyright-text" class="navbar-text">Copyright © </span>
+      <span id="navbar-copyright-year" class="navbar-text">2024</span>
+    </div>
+  </div>
+  <div id="navbar-title-container" class="navbar-text"> 
+    <div id="navbar-title-name">GIO.G</div>
+    <div id="navbar-title-separator">:</div>
+    <div id="navbar-title-expanded">Generator for Indoor-Outdoor Graphs</div>
+  </div>
+  <div id="navbar-about-container">
+    <div id="navbar-about-button" class="navbar-text" onclick="toggle_about_visibility()">
+      <i id="navbar-about-icon" class="material-icons">info</i>
+    </div>
+  </div>
+</div>
+
+<div id="page">
+  <div id="left-sidebar">
+
+    <button class="accordion-button title accordion-active">Graph Generator</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+      <div id="config-form-container" class="options-form-container">
+
+        <div class="options-category-container">
+          <div class="subsubtitle">Number of Buildings:</div>
+          <div class="options-input-container">
+            <input type="text" id="num-buildings-input" name="num_buildings" required minlength="1" maxlength="8" size="10" value="25" placeholder="e.g. 25"
+              oninput="this.value = this.value.replace(/\D/g, '');"/>
+          </div>
+        </div>
+
+        <div class="options-category-container">
+          <div class="subsubtitle">Grid Coverage:</div>
+          <div class="options-input-container">
+            <div class="options-slider-container">
+              <input class="options-slider" type="range" id="coverage-input" name="coverage" min="0" max="1" step="0.01" value="0.75"/>
+              <span id="coverage-value" class="options-slider-value"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="options-category-container">
+          <div class="subsubtitle">Building Clustering:</div>
+          <div class="options-input-container">
+            <div class="options-slider-container">
+              <input class="options-slider" type="range" id="clustering-input" name="clustering" min="0" max="0.5" step="0.01" value="0"/>
+              <span id="clustering-value" class="options-slider-value"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="options-category-container">
+          <span class="subsubtitle">Constant Congestion:</span>
+          <span class="options-input-container">
+            <span class="options-short-group">
+              <input type="checkbox" id="constant-congestion-input" name="constant_con"/>
+              <label for="constant-congestion-input">Enabled</label>
+            </span>
+          </span>
+        </div>
+
+        <div class="options-category-container">
+          <div id="congestion-slider-label" class="subsubtitle">Congestion Levels:</div>
+          
+          <div class="options-input-container">
+            <div id="congestion-slider-container">
+              <div id="congestion-slider" disabled></div>
+            </div>
+            <div id="congestion-labels-values-container">
+              <div class="congestion-value-container">
+                <span>Low Congestion:</span>
+                <span id="low-con-value" class="low-con-text-color"></span>
+              </div>
+              <div class="congestion-value-container">
+                <span>Medium Congestion:</span>
+                <span id="med-con-value" class="med-con-text-color"></span>
+              </div>
+              <div class="congestion-value-container">
+                <span>High Congestion:</span>
+                <span id="high-con-value" class="high-con-text-color"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="options-category-container">
+          <button type="button" onclick="submit_graph_gen_form()" class="standard-button">Submit</button>
+        </div>
+
+        <div class="options-category-container">
+          <div id="graph-gen-error-text" class="error-text"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <button class="accordion-button title accordion-active">Path Recommendation</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div id="path-gen-form-container" class="options-form-container">
+
+          <div class="options-category-container">
+            <div class="subsubtitle">Algorithms:</div>
+            <div class="options-input-container">
+              <input type="checkbox" id="path-gen-astro-cb" value="astro" checked>
+              <label for="path-gen-astro-cb">Astro</label>
+              <br>
+              <input type="checkbox" id="path-gen-dijkstra-con-cb" value="dijkstraC">
+              <label for="path-gen-dijkstra-con-cb">Astro-C</label>
+              <br>
+              <input type="checkbox" id="path-gen-astrog-cb" value="astroG">
+              <label for="path-gen-astrog-cb">Astro-G</label>
+              <br>
+              <input type="checkbox" id="path-gen-dijkstra-cb" value="dijkstra">
+              <label for="path-gen-dijkstra-cb">Dijkstra</label>
+              <br>
+              <input type="checkbox" id="path-gen-greedy-cb" value="greedy">
+              <label for="path-gen-greedy-cb">Greedy</label>
+            </div>
+          </div>  
+
+          <div class="options-category-container">
+            <span class="subsubtitle">Usable Doors:</span>
+            <span class="options-input-container">
+              <span class="options-short-group">
+                <input type="radio" id="standard-input" name="accessibility-type" value="standard" checked>
+                <label for="standard-input">All</label>
+              </span>
+              <span class="options-short-group">
+                <input type="radio" id="accessibility-input" name="accessibility-type" value="accessible">
+                <label for="accessibility-input">Accessible</label>
+              </span>
+            </span>
+          </div>
+
+          <div class="options-category-container">
+            <span class="subsubtitle">Endpoints:</span>
+            <div class="options-input-container">
+              <span id="path-start-building-label" class="subsubtitle">Start:</span>
+              <span id="path-start-building-info"></span>
+              <button id="select-path-start-button" type="button" onclick="handle_select_start_building_button()" class="standard-button">Select</button>
+            </div>
+            <div class="options-input-container">
+              <span id="path-end-building-label" class="subsubtitle">End:</span>
+              <span id="path-end-building-info"></span>
+              <button id="select-path-end-button" type="button" onclick="handle_select_end_building_button()" class="standard-button">Select</button>
+            </div>
+          </div>
+          
+          <div class="options-category-container">
+            <button type="button" onclick="submit_path_gen_form()" class="standard-button">Submit</button>
+          </div>
+
+          <div class="options-category-container">
+            <div id="path-gen-error-text" class="error-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="accordion-button title">Manage Graph Data</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div class="options-form-container">
+          <div class="options-category-container">
+            <div class="subsubtitle">Select Graph Preset:</div>
+            <div class="options-input-container">
+              <select id="preset-graph-select-input">
+                <option value="" selected disabled hidden>Select Preset</option>
+                <option value="graph_25_0.75.json">graph_25_0.75.json</option>
+                <option value="graph_50_0.75.json">graph_50_0.75.json</option>
+                <option value="graph_100_0.75.json">graph_100_0.75.json</option>
+                <option value="graph_example_paths.json">graph_example_paths.json</option>
+                <option value="in_order_graph.json">in_order_graph.json</option>
+                <option value="true_random_graph.json">true_random_graph.json</option>
+                <option value="graph_connected_test.json">graph_connected_test.json</option>
+                <option value="graph_actual_connected.json">graph_actual_connected.json</option>
+              </select>
+            </div>
+            <div class="options-input-container">
+              <button type="button" onclick="submit_load_graph_preset()" class="standard-button">Submit</button>
+            </div>
+          </div>
+
+          <div class="options-category-container">
+            <div class="subsubtitle">Import Graph:</div>
+            <div class="options-input-container">
+              <input id="import-graph-input" type="file"/>
+            </div>
+            <div class="options-input-container">
+              <button type="button" onclick="submit_uploaded_graph()" class="standard-button">Submit</button>
+            </div>
+          </div>
+
+          <div class="options-category-container">
+            <div class="subsubtitle">Export Graph:</div>
+            <div class="options-input-container">
+              <button type="button" onclick="download_graph_export()" class="standard-button">Download</button>
+              <span class="options-short-group">
+                <input type="checkbox" id="export-pretty-cb">
+                <label for="export-pretty-cb">Prettify</label>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="accordion-button title">Display Options</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div class="options-form-container">
+          
+          <div class="options-category-container" id="display-options-buttons-container">
+            <button id="toggle-buildings-button" type="button" onclick="handle_buildings_visible_button(this)" class="standard-button">Toggle Buildings</button>
+            <button id="toggle-corridors-button" type="button" onclick="handle_corridors_visible_button(this)" class="standard-button">Toggle Corridors</button>
+            <button id="toggle-paths-button" type="button" onclick="handle_paths_visible_button(this)" class="standard-button">Toggle Paths</button>
+            <button id="toggle-all-roads-button" type="button" onclick="handle_roads_visible_button(this)" class="standard-button">Toggle All Roads</button>
+            <button id="toggle-removed-roads-button" type="button" onclick="handle_removed_roads_visible_button(this)" class="standard-button">Toggle Removed Roads</button>
+            <button id="toggle-con-colors-button" type="button" onclick="handle_congestion_colors_button(this)" class="standard-button">Toggle Congestion Colors</button>
+            <button id="toggle-selection-highlights-button" type="button" onclick="handle_cell_highlights_visible_button(this)" class="standard-button">Toggle Selection Highlight</button>
+            <button id="toggle-path-endpoints-button" type="button" onclick="handle_path_endpoint_visibility_button(this)" class="standard-button">Toggle Path Endpoints</button>
+            <button id="toggle-auto-sections-button" type="button" onclick="handle_auto_open_button(this)" class="standard-button">Toggle Auto Open Sections</button>
+            <button id="toggle-auto-endpoint-button" type="button" onclick="handle_auto_path_endpoint_reset_button(this)" class="standard-button">Toggle Auto Endpoint Reset</button>
+          </div>
+        </div>     
+      </div>   
+    </div>
+
+    <button class="accordion-button title">Dev Options</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div class="options-form-container">
+          <div class="options-category-container">
+            <button id="toggle-clipping-button" type="button" onclick="handle_clipping_visible_button(this)" class="standard-button">Toggle Building Clipping</button>
+          </div>
+          <div class="options-category-container">
+            <button id="toggle-pan-button" type="button" onclick="handle_panning_toggle_button(this)" class="standard-button">Toggle Panning</button>
+          </div>
+          <div class="options-category-container">
+            <button id="toggle-zoom-button" type="button" onclick="handle_zooming_toggle_button(this)" class="standard-button">Toggle Zooming</button>
+          </div>
+          <div class="options-category-container">
+            <button id="toggle-about-multi-button" type="button" onclick="handle_about_multiselect_toggle_button(this)" class="standard-button">Toggle About Multi-Select</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="graph-stage-container">
+    <div id="graph-stage"></div>
+  </div>
+
+  <div id="right-sidebar">
+
+    <button class="accordion-button title accordion-active" id="building-editor-accordion-button">Building Editor</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+
+          <div class="options-category-container">
+            <div id="building-editor-stage-container">
+              <div id="building-editor-stage"></div>
+            </div>
+          </div>
+  
+          <div id="selected-cell-info-text-container" class="options-category-container"></div>
+          <div id="selected-building-actions-container" class="options-category-container"></div>
+          <div id="selected-building-options-container" class="options-category-container"></div>
+  
+          <div id="selected-building-options-container" class="options-category-container"></div>
+          <div id="selected-building-doors-container" class="options-category-container"></div>
+
+      </div>
+    </div>
+
+    <button class="accordion-button title" id="path-legend-accordion-button">Path Legend</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div id="graph-legend">
+          <div id="graph-legend-display-title">Display</div>
+          <div id="graph-legend-list">
+            <div class="graph-legend-item" id="graph-legend-item-astro">
+              <span class="graph-legend-item-name col-1">Astro</span>
+              <span id="solid-line" class="graph-legend-line col-2"></span>
+              <span class="options-short-group graph-legend-item-cb-container col-3">
+                <input type="checkbox" id="legend-display-astro-cb" onChange="path_display_checkbox_changed(this.value, this.checked)" value="astro" checked>
+              </span>
+            </div>
+            <div class="graph-legend-item" id="graph-legend-item-dijkstraC">
+              <span class="graph-legend-item-name col-1">Astro-C</span>
+              <span id="dotdashed-line" class="graph-legend-line col-2"></span>
+              <span class="options-short-group graph-legend-item-cb-container col-3">
+                <input type="checkbox" id="legend-display-dijkstra-con-cb" onChange="path_display_checkbox_changed(this.value, this.checked)" value="dijkstraC" checked>
+              </span>
+            </div>
+            <div class="graph-legend-item" id="graph-legend-item-astroG">
+              <span class="graph-legend-item-name col-1">Astro-G</span>
+              <span id="dashed-line" class="graph-legend-line col-2"></span>
+              <span class="options-short-group graph-legend-item-cb-container col-3">
+                <input type="checkbox" id="legend-display-astrog-cb" onChange="path_display_checkbox_changed(this.value, this.checked)" value="astroG" checked>
+              </span>
+            </div>
+            <div class="graph-legend-item" id="graph-legend-item-dijkstra">
+              <span class="graph-legend-item-name col-1">Dijkstra</span>
+              <span id="dotted-line" class="graph-legend-line col-2"></span>
+              <span class="options-short-group graph-legend-item-cb-container col-3">
+                <input type="checkbox" id="legend-display-dijkstra-cb" onChange="path_display_checkbox_changed(this.value, this.checked)" value="dijkstra" checked>
+              </span>
+            </div>
+            <div class="graph-legend-item" id="graph-legend-item-greedy">
+              <span class="graph-legend-item-name col-1">Greedy</span>
+              <span id="longdashed-line" class="graph-legend-line col-2"></span>
+              <span class="options-short-group graph-legend-item-cb-container col-3">
+                <input type="checkbox" id="legend-display-greedy-cb" onChange="path_display_checkbox_changed(this.value, this.checked)" value="greedy" checked>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="accordion-button title" id="path-stats-accordion-button">Path Statistics</button>
+    <div class="options-section">
+      <div class="options-section-inner-container">
+        <div class="options-category-container stats-table-container" id="stats-table-time-container"> 
+          <div class="subtitle">Travel Time (seconds):</div>
+          <div class="stats-table" id="stats-table-time">
+            <div class="stats-table-header-row">
+              <div class="stats-table-header col-1">Algorithm</div>
+              <div class="stats-table-header col-2">Total</div>
+              <div class="stats-table-header col-3">Indoor</div>
+              <div class="stats-table-header col-4">Outdoor</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-time-astro">
+              <div class="stats-table-cell stats-table-left-col col-1">Astro</div>
+              <div class="stats-table-cell col-2">0.00</div>
+              <div class="stats-table-cell col-3">0.00</div>
+              <div class="stats-table-cell col-4">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-time-dijkstraC">
+              <div class="stats-table-cell stats-table-left-col col-1">Astro-C</div>
+              <div class="stats-table-cell col-2">0.00</div>
+              <div class="stats-table-cell col-3">0.00</div>
+              <div class="stats-table-cell col-4">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-time-astroG">
+              <div class="stats-table-cell stats-table-left-col col-1">Astro-G</div>
+              <div class="stats-table-cell col-2">0.00</div>
+              <div class="stats-table-cell col-3">0.00</div>
+              <div class="stats-table-cell col-4">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-time-dijkstra">
+              <div class="stats-table-cell stats-table-left-col col-1">Dijkstra</div>
+              <div class="stats-table-cell col-2">0.00</div>
+              <div class="stats-table-cell col-3">0.00</div>
+              <div class="stats-table-cell col-4">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-time-greedy">
+              <div class="stats-table-cell stats-table-left-col col-1">Greedy</div>
+              <div class="stats-table-cell col-2">0.00</div>
+              <div class="stats-table-cell col-3">0.00</div>
+              <div class="stats-table-cell col-4">0.00</div>
+            </div>
+          </div> 
+        </div>
+        <div class="options-category-container stats-table-container" id="stats-table-con-container"> 
+          <div class="subtitle">Congestion (# of people / m²):</div>
+          <div class="stats-table" id="stats-table-con">
+            <div class="stats-table-header-row">
+              <div class="stats-table-header">Algorithm</div>
+              <div class="stats-table-header">Avg</div>
+              <div class="stats-table-header">Min</div>
+              <div class="stats-table-header">Max</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-con-astro">
+              <div class="stats-table-cell stats-table-left-col">Astro</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-con-dijkstraC">
+              <div class="stats-table-cell stats-table-left-col">Astro-C</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-con-astroG">
+              <div class="stats-table-cell stats-table-left-col">Astro-G</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-con-dijkstra">
+              <div class="stats-table-cell stats-table-left-col">Dijkstra</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+            </div>
+            <div class="stats-table-row" id="stats-table-row-con-greedy">
+              <div class="stats-table-cell stats-table-left-col">Greedy</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+              <div class="stats-table-cell">0.00</div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+<script type="text/javascript" src="static/js/building_editor.js"></script>
+<script type="text/javascript" src="static/js/connections.js"></script>
+<script type="text/javascript" src="static/js/coordinates.js"></script>
+<script type="text/javascript" src="static/js/data_management.js"></script>
+<script type="text/javascript" src="static/js/draw.js"></script>
+<script type="text/javascript" src="static/js/generation.js"></script>
+<script type="text/javascript" src="static/js/math.js"></script>
+<script type="text/javascript" src="static/js/page_controls.js"></script>
+<script type="text/javascript" src="static/js/stages.js"></script>
+<script type="text/javascript" src="static/js/app.js"></script>
+</body>
+</html> 
