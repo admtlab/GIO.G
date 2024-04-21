@@ -40,3 +40,9 @@ Distributed under the MIT License. See LICENSE.txt for more information.
 ## Contact
 
 [Vasilis Sarris](https://github.com/sarrisv) @ University of Pittsburgh
+
+## Citations
+
+- [1] V. Sarris, P. Chrysanthis, C. Costa, "Recommending the Least Congested Indoor-Outdoor Paths without Ignoring Time," in Proceedings of the 18th International Symposium on Spatial and Temporal Data, 2023, pp. 121–130.
+
+
