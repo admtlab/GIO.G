@@ -11,7 +11,7 @@ import scala.language.postfixOps
 class DisplayController @Inject()(cc: ControllerComponents) (implicit assetsFinder: AssetsFinder) extends AbstractController(cc) {
 
   def index = Action {
-    Ok("TODO: Link to front end's index.html when merging")
+    Ok(views.html.index())
   }
 
 }

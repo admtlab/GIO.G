@@ -16,6 +16,7 @@ async function generate_graph(config) {
     fetch("http://localhost:9000/new_graph", {
         method: 'POST',
         headers: {
+          'Csrf-Token': 'nocheck',
           'Accept': 'application/json, text/plain, */*',
           'Content-Type': 'application/json'
         },
@@ -49,6 +50,7 @@ async function recommend_paths(path_configs) {
         const response = await fetch("http://localhost:9000/update_graph", {
             method: "POST",
             headers: {
+                'Csrf-Token': 'nocheck',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(filtered_graph)
@@ -60,6 +62,7 @@ async function recommend_paths(path_configs) {
         const response2 = await fetch("http://localhost:9000/find_path", {
             method: "POST",
             headers: {
+                'Csrf-Token': 'nocheck',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(path_configs[0])
@@ -73,6 +76,7 @@ async function recommend_paths(path_configs) {
     fetch("http://localhost:9000/update_graph", {
         method: 'POST',
         headers: {
+            'Csrf-Token': 'nocheck',
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json'
         },
@@ -91,6 +95,7 @@ async function recommend_paths(path_configs) {
             fetch("http://localhost:9000/find_path", {
                 method: 'POST',
                 headers: {
+                    'Csrf-Token': 'nocheck',
                     'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json'
                 },
@@ -114,24 +119,6 @@ async function recommend_paths(path_configs) {
         }
         process_paths(alg_results);
     }).catch(err => console.log(err));
-
-    // TODO: remove this (and test path files) since it's no longer needed
-    //// use local path data for now
-    //Promise.all(path_configs.map((path_config) => 
-    //    fetch(`/static/assets/paths/${path_config.algorithm}.json`)
-    //)).then(responses =>
-    //    Promise.all(responses.map(response => response.json()))
-    
-    //// process and draw the paths
-    //).then((jsons) => {
-    //    // associate each returned stats and path with the algorithm name
-    //    let alg_results = {};
-    //    for (let i = 0; i < path_configs.length; i++) {
-    //        alg_results[path_configs[i].algorithm] = jsons[i];
-    //    }
-    //    console.log("paths data: ", alg_results);
-    //    process_paths(alg_results);
-    //}).catch(err => console.log(err));
 }
 
 
@@ -142,7 +129,7 @@ async function recommend_paths(path_configs) {
 function load_preset_graph(graph_file) {
 
     // get the graph and draw its buildings on the response
-    fetch(`/static/assets/graphs/${graph_file}`)
+    fetch(`/assets/static/assets/graphs/${graph_file}`)
         .then((res) => res.json())
         .then((json) => {
             console.log("preset graph data: ", json);

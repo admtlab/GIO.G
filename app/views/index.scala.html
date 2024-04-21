@@ -1,16 +1,17 @@
+@()(implicit assetsFinder: AssetsFinder)
 <!DOCTYPE html>
 <html>
 <head>
   <title>GIO.G</title>
 
-  <link rel="stylesheet" href="/static/vendor/nouislider@15.7.1/nouislider.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" type="text/css" href="@assetsFinder.path("static/vendor/nouislider@15.7.1/nouislider.min.css")">
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" type="text/css" href="@assetsFinder.path("static/css/styles.css")">
 
-  <script type="text/javascript" src="/static/vendor/konva@9.3.6/konva.min.js"></script>
-  <script type="text/javascript" src="/static/vendor/tinyqueue@2.0.3/tinyqueue.min.js"></script>
-  <script type="text/javascript" src="/static/vendor/polylabel@1.1.0/polylabel.js"></script>
-  <script type="text/javascript" src="/static/vendor/nouislider@15.7.1/nouislider.min.js"></script>
+  <script type="text/javascript" src="@assetsFinder.path("static/vendor/konva@9.3.6/konva.min.js")"></script>
+  <script type="text/javascript" src="@assetsFinder.path("static/vendor/tinyqueue@2.0.3/tinyqueue.min.js")"></script>
+  <script type="text/javascript" src="@assetsFinder.path("static/vendor/polylabel@1.1.0/polylabel.js")"></script>
+  <script type="text/javascript" src="@assetsFinder.path("static/vendor/nouislider@15.7.1/nouislider.min.js")"></script>
 
 </head>
 <body>
@@ -40,41 +41,41 @@
               <div class="about-contributor-department">Dept. of Computer Science</div>
               <div class="about-contributor-org">University of Pittsburgh</div>
               <div class="about-contributor-location">Pittsburgh, USA</div>
-              <div class="about-contributor-email">v.sarris@pitt.edu</div>
+              <div class="about-contributor-email">v.sarris@@pitt.edu</div>
             </div>
             <div class="about-contributor">
               <div class="about-contributor-name">Connor P. Sweeney</div>
               <div class="about-contributor-department">Dept. of Computer Science</div>
               <div class="about-contributor-org">University of Pittsburgh</div>
               <div class="about-contributor-location">Pittsburgh, USA</div>
-              <div class="about-contributor-email">cps43@pitt.edu</div>
+              <div class="about-contributor-email">cps43@@pitt.edu</div>
             </div>
             <div class="about-contributor">
               <div class="about-contributor-name">Sean M. Linton</div>
               <div class="about-contributor-department">Dept. of Computer Science</div>
               <div class="about-contributor-org">University of Pittsburgh</div>
               <div class="about-contributor-location">Pittsburgh, USA</div>
-              <div class="about-contributor-email">sean.linton@pitt.edu</div>
+              <div class="about-contributor-email">sean.linton@@pitt.edu</div>
             </div>
             <div class="about-contributor">
               <div class="about-contributor-name">Brian T. Nixon</div>
               <div class="about-contributor-department">Dept. of Computer Science</div>
               <div class="about-contributor-org">University of Pittsburgh</div>
               <div class="about-contributor-location">Pittsburgh, USA</div>
-              <div class="about-contributor-email">nixon.b@cs.pitt.edu</div>
+              <div class="about-contributor-email">nixon.b@@cs.pitt.edu</div>
             </div>
             <div class="about-contributor">
               <div class="about-contributor-name">Panos K. Chrysanthis</div>
               <div class="about-contributor-department">Dept. of Computer Science</div>
               <div class="about-contributor-org">University of Pittsburgh</div>
               <div class="about-contributor-location">Pittsburgh, USA</div>
-              <div class="about-contributor-email">panos@cs.pitt.edu</div>
+              <div class="about-contributor-email">panos@@cs.pitt.edu</div>
             </div>
             <div class="about-contributor">
               <div class="about-contributor-name">Constantinos Costa</div>
               <div class="about-contributor-org">Rinnoco Ltd.</div>
               <div class="about-contributor-location">Limassol, Cyprus</div>
-              <div class="about-contributor-email">costa.c@rinnoco.com</div>
+              <div class="about-contributor-email">costa.c@@rinnoco.com</div>
             </div>
           </div>
         </div>
@@ -296,8 +297,8 @@
 
   <div id="navbar-admt-container">
     <div id="navbar-logos">
-      <a href="https://db.cs.pitt.edu/"><img src="/static/assets/logos/admt.png" width="50" height="50" alt=""></a>
-      <img src="/static/assets/logos/pitt.png" width="48" height="48" alt="">
+      <a href="https://db.cs.pitt.edu/"><img src="@assetsFinder.path("static/assets/logos/admt.png")" width="50" height="50" alt=""></a>
+      <img src="@assetsFinder.path("static/assets/logos/pitt.png")" width="48" height="48" alt="">
     </div>
     <div id="navbar-admt-text">
       <span id="navbar-admt-title" class="navbar-text">ADMT Lab</span>
@@ -714,15 +715,15 @@
   </div>
 </div>
   
-<script type="text/javascript" src="static/js/building_editor.js"></script>
-<script type="text/javascript" src="static/js/connections.js"></script>
-<script type="text/javascript" src="static/js/coordinates.js"></script>
-<script type="text/javascript" src="static/js/data_management.js"></script>
-<script type="text/javascript" src="static/js/draw.js"></script>
-<script type="text/javascript" src="static/js/generation.js"></script>
-<script type="text/javascript" src="static/js/math.js"></script>
-<script type="text/javascript" src="static/js/page_controls.js"></script>
-<script type="text/javascript" src="static/js/stages.js"></script>
-<script type="text/javascript" src="static/js/app.js"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/building_editor.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/connections.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/coordinates.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/data_management.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/draw.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/generation.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/math.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/page_controls.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/stages.js")"></script>
+<script type="text/javascript" src="@assetsFinder.path("static/js/app.js")"></script>
 </body>
-</html> 
+</html>
