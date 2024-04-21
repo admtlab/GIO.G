@@ -16,7 +16,22 @@ In order to run our web interface, run ```sbt run``` from the root directory. Th
 
 ## Running - Command-line Interface
 
-If you'd rather use the graph generator itself, without the web interface, TODO
+If you'd rather use the graph generator itself, without the web interface: 
+
+1. First you will need to move to the *cli* folder: 
+    ```bash 
+    cd cli
+    ```
+2. Run the GIO.G through the sbt build tool
+    - Output usage text detailing all the ways to use the CLI app
+        ```bash 
+        sbt "run"
+        ```
+
+    - Output example graph with default configuration
+        ```bash
+        sbt "run --default --format json" 
+        ```
 
 ## License
 
@@ -24,4 +39,4 @@ Distributed under the MIT License. See LICENSE.txt for more information.
 
 ## Contact
 
-TODO
+[Vasilis Sarris](https://github.com/sarrisv) @ University of Pittsburgh
