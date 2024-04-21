@@ -506,6 +506,14 @@ function coords_eq(p1, p2, tol=0.0001) {
 }
 
 
+// helper method to determine if lines are equal
+function lines_eq(l1, l2, tol=0.0001) {
+
+    return (coords_eq(l1[0], l2[0], tol) && coords_eq(l1[1], l2[1], tol)) || (coords_eq(l1[0], l2[1], tol) && coords_eq(l1[1], l2[0], tol))
+
+}
+
+
 // remove points from path list that are in a straight line with neighboring points
 function simplify_path(points, closed, tol=0.0001) {
 
@@ -557,6 +565,88 @@ function simplify_path(points, closed, tol=0.0001) {
     });
 
     return new_points;
+}
+
+
+// helper function to eliminate self intersections in a given path
+function elimate_self_intersections(path) {
+    
+    let best_point = {x:Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER};
+    let best_index = -1;
+
+    // find the top-left most point
+    for (let i = 0; i < path.length; i++) {
+        let point = path[i];
+
+        if (point.x < best_point.x || point.y < best_point.y) {
+            best_point = point;
+            best_index = i;
+        }
+    }
+
+    let new_path = [best_point];
+    let start_index = best_index;
+    let cur_index = (start_index + 1) % path.length;
+
+    let max_depth =  path.length + 1;
+    let counter = 0;
+
+    while (cur_index != start_index && counter < max_depth) {
+        counter++;
+
+        let next_index = (cur_index + 1) % path.length;
+
+        let cur_point = path[cur_index];
+        let next_point = path[next_index];
+        let cur_line = [cur_point, next_point];
+
+        // find the wall with the closest intersection point with the current wall if there is one
+        let best_intersection = null;
+        let best_intersection_dist = Number.MAX_SAFE_INTEGER;
+        let best_intersection_index = -1;
+
+        // iterate over every sequential pair of points in the path
+        for (let i = 0; i < path.length; i++) {
+
+            let p2_index = (i + 1) % path.length
+
+            // do not look for intersections from adjacent lines
+            if (i === cur_index || p2_index === cur_index || i === next_index || p2_index === next_index) {
+                continue;
+            }
+
+            let p1 = path[i];
+            let p2 = path[p2_index];
+
+            let intersection = calc_lines_intersection(cur_line, [p1, p2]);
+            if (intersection === null) {
+                continue;
+            }
+
+            let dist = calc_dist(intersection, cur_point);
+
+            if (dist < best_intersection_dist) {
+                best_intersection = intersection;
+                best_intersection_index = i;
+                best_intersection_dist = dist;
+            }
+        }
+
+        // add the current point to the path
+        new_path.push(cur_point);
+
+        // check if an intersection was found
+        if (best_intersection === null) {
+            cur_index = next_index;
+        } else {
+
+            // if intersection found, push that to the path, then get the next point on the intersecting line
+            new_path.push(best_intersection);
+            cur_index = point_is_left_of_line(path[best_intersection_index], cur_line) ? (best_intersection_index + 1) % path.length : best_intersection_index;
+        }
+    }
+
+    return simplify_path(new_path, true);
 }
 
 
@@ -776,6 +866,12 @@ function calc_point_quadrant(point, ref_point) {
     }
 
     return null;
+}
+
+
+// determine if point is left of line
+function point_is_left_of_line(point, line) {
+    return (line[1].x - line[0].x)*(point.y - line[0].y) - (line[1].y - line[0].y)*(point.x - line[0].x) > 0;
 }
 
 

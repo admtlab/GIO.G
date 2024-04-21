@@ -289,7 +289,12 @@ function update_deep_doors(building) {
         let target = doors[(d + 1) % doors.length];
         let neighbor2 = doors[(d + 2) % doors.length];
 
-        let deep_status = check_deep_door(neighbor1, target, neighbor2, building);
+        // get the building coords associated with the current target coords
+        let target_building_coords = estimate_building_grid_coords(target);
+        target_building_coords.x += 0.5;
+        target_building_coords.y += 0.5;
+
+        let deep_status = check_deep_door(neighbor1, target, neighbor2, target_building_coords);
 
         // found deep door in on left side of building
         if (deep_status === "left") {
@@ -344,55 +349,51 @@ function check_deep_door(neighbor1, target, neighbor2, reference) {
 // creates the building outline grid path for the building at the given coordinates
 function create_building_outline_path(cell_info) {
 
+    let all_connected_coords = [
+        grid_coords_for_building_or_door(cell_info.building_data), 
+        ...cell_info.building_mods.connected_building_coords.map(coords => grid_coords_for_building_or_door(coords))];
+
     // get list of doors based on door mods (in case of closed doors being removed from main list)
     let doors = [];
     for (let door_id in cell_info.building_mods.entrance_mods) {
         doors.push(cell_info.building_mods.entrance_mods[door_id].data_ref);
     }
     doors.sort((a, b) => a.id - b.id);
-    // doors = sort_points_for_convex_polygon(doors).reverse();
 
     // store coordinates to draw building shape
     let grid_shape_path = [];
-
-    let updating_2nd_deep_half = false;
 
     // iterate over every sequential pairs of doors
     for (let d = 0; d < doors.length; d++) {
 
         let door1 = doors[d];
         let door2 = doors[(d + 1) % doors.length];
-
-        // get the deep status of the next
-        let door2_deep_status = doors.length > 3 ? check_deep_door(door1, door2, doors[(d + 2) % doors.length], cell_info.building_data) : null;
         
         // get door x and y coordinates (convert 1-indexed to 0-indexed)
         let door1_grid_coords = grid_coords_for_building_or_door(door1);
         let door2_grid_coords = grid_coords_for_building_or_door(door2);
 
-        // find the corner or corner cutout for the next door
-        if (door2_deep_status !== null || updating_2nd_deep_half) {
-            let corner_path = calc_cutout_corner_between_points(door1_grid_coords, door2_grid_coords, true, 0.5);
-            grid_shape_path.push(door1_grid_coords, ...corner_path);
+        let corner = calc_corner_between_points(door1_grid_coords, door2_grid_coords, true, false);
+        let corner_cell_coords = estimate_building_grid_coords(corner);
 
-            if (door2_deep_status !== null) {
-                updating_2nd_deep_half = true;
-            } else if (updating_2nd_deep_half) {
-                updating_2nd_deep_half = false;
-            }
-
-        } else {
-            let corner = calc_corner_between_points(door1_grid_coords, door2_grid_coords, true, false);
-            grid_shape_path.push(door1_grid_coords, corner);
+        // check if corner is outside any connected building cells and flip it if so
+        if (!all_connected_coords.some((coords) => coords_eq(corner_cell_coords, coords))) {
+            corner = calc_corner_between_points(door1_grid_coords, door2_grid_coords, false, false);
         }
+
+        grid_shape_path.push(door1_grid_coords, corner);
     }
 
     // simplify the grid path by removing duplicate points and points on the same line
-    simplified_grid_path = simplify_path(grid_shape_path, true, 0.0001);
+    grid_shape_path = simplify_path(grid_shape_path, true, 0.0001);
+
+    // running twice seems to help? TODO: not a perfect solution, and may introduce more bugs...
+    grid_shape_path = elimate_self_intersections(grid_shape_path);
+    grid_shape_path = elimate_self_intersections(grid_shape_path);
 
     // save the path to the cell_info
-    cell_info.building_mods.outline_grid_path = simplified_grid_path;
-    cell_info.building_mods.outline_grid_walls = lines_from_path(simplified_grid_path, true);
+    cell_info.building_mods.outline_grid_path = grid_shape_path;
+    cell_info.building_mods.outline_grid_walls = lines_from_path(grid_shape_path, true);
 }
 
 
@@ -1231,6 +1232,18 @@ function connect_building_cell_walls_grid_path(building1_id, wall_direction1, bu
             let adj_id = grid_coords_to_building_id(adj_coords);
             neighbor_pairs.push({cell_id: adj_id, wall_dir: opposite_dir});
         };
+
+        // find paired wall for current wall
+        let opposite_dir = get_opposite_direction(entry.wall_dir);
+
+        let cell_coords = grid_coords_for_building_id(entry.cell_id);
+        let adj_coords = calc_adjacent_grid_coord(cell_coords, entry.wall_dir);
+
+        // found neighbors are guaranteed to have a matching adjacent wall unless out of bounds
+        if (!(adj_coords.x < 0 || adj_coords.x >= grid.length || adj_coords.y < 0 || adj_coords.y >= grid.length)) {
+            let adj_id = grid_coords_to_building_id(adj_coords);
+            neighbor_pairs.push({cell_id: adj_id, wall_dir: opposite_dir});
+        }
 
         return neighbors.concat(neighbor_pairs);
     }

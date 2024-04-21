@@ -1442,3 +1442,36 @@ function draw_internal_path_part(cell_info, door1_id, door2_id, parent, path_typ
 
     parent.add(internal_path_shape);
 }
+
+
+/* ------------------------------ test drawing ------------------------------ */
+
+
+// draws a line connecting doors in the main doors list of each building
+function draw_path_between_doors() {
+
+    for (let b = 0; b < current_graph.length; b++) {
+        let building = current_graph[b];
+        let building_grid_coords = grid_coords_for_building_or_door(building);
+
+        let path = [];
+        for (let d = 0; d < building.entrances.length; d++) {
+            let door1 = building.entrances[d];
+
+            let door1_grid_coords = grid_coords_for_building_or_door(door1);
+            path.push(door1_grid_coords);
+        }
+
+        let stage_path = path.map((coords) => door_grid_coords_to_stage_coords(coords, building_grid_coords, true));
+
+        let shape = new Konva.Line({
+            points: flatten_points(stage_path),
+            stroke: "red",
+            strokeWidth: 1,
+            perfectDrawEnabled: false,
+            closed: true
+        });
+
+        selection_layer.add(shape);
+    }
+}
