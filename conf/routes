@@ -1,0 +1,14 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+
+# Index page of GIO.G's front-end web interface
+GET     /                           controllers.DisplayController.index
+
+# Generate a new graph from a configuration object
+POST    /new_graph                  controllers.CoreController.genGraph
+
+# Update the graph representation on the back end from a list of buildings
+POST    /update_graph               controllers.CoreController.updateGraph
+
+# Update the graph representation on the back end from a list of buildings
+POST    /find_path                  controllers.CoreController.pathFind
