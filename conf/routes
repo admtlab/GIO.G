@@ -4,6 +4,9 @@
 # Index page of GIO.G's front-end web interface
 GET     /                           controllers.DisplayController.index
 
+# Serve assets to the front end
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
 # Generate a new graph from a configuration object
 POST    /new_graph                  controllers.CoreController.genGraph
 
