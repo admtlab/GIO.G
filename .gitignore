@@ -37,6 +37,10 @@
 local.sbt
 jitwatch.out
 
+# CLI sbt directories
+cli/target
+cli/project
+
 # Used by the restarr/restarrFull commands as target directories
 /build-restarr/
 /target-restarr/
