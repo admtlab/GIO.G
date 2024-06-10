@@ -14,6 +14,17 @@ Sbt version [1.9.8](https://www.scala-sbt.org/download/)
 
 In order to run our web interface, run ```sbt run``` from the root directory. Then go to <http://localhost:9000> to see the running web application.
 
+To simplify running the web interface, we have also included a dockerfile to run GIO.G in a docker container.
+
+1. Build Image
+    ```
+    docker build -t GIO.G .
+    ```
+2. Start Container
+    ```
+    docker run -it -p 9000:9000 GIO.G
+    ```
+
 ## Running - Command-line Interface
 
 If you'd rather use the graph generator itself, without the web interface: 
