@@ -303,6 +303,16 @@ function update_config_con_labels(handle_values) {
 }
 
 
+// set the visibility of the graph gen spinner
+function set_graph_gen_spinner_enabled(enabled) {
+
+    let spinner = document.getElementById("graph-gen-spinner");
+    let display = enabled ? "grid" : "none";
+
+    spinner.style.display = display;
+}
+
+
 /* ------------------------- path gen form controls ------------------------- */
 
 
@@ -477,6 +487,16 @@ function handle_select_end_building_button() {
     // update selection buttons colors
     update_path_select_buttons_active();
     update_new_connection_button_active();
+}
+
+
+// set the visibility of the path gen spinner
+function set_path_gen_spinner_enabled(enabled) {
+
+    let spinner = document.getElementById("path-gen-spinner");
+    let display = enabled ? "grid" : "none";
+
+    spinner.style.display = display;
 }
 
 

@@ -12,6 +12,9 @@ async function generate_graph(config) {
 
     console.log("generating graph with config: ", config);
 
+    // start the graph generator spinner
+    set_graph_gen_spinner_enabled(true);
+
     // send request to generate a new graph
     fetch("http://localhost:9000/new_graph", {
         method: 'POST',
@@ -29,6 +32,9 @@ async function generate_graph(config) {
     .then((json) => {
         console.log("graph data: ", json);
         process_generated_graph(json, config);
+
+        // disable the graph generator spinner
+        set_graph_gen_spinner_enabled(false);
     })
     .catch((e) => console.error(e));
 }
@@ -41,6 +47,9 @@ async function recommend_paths(path_configs) {
 
     console.log("recommending paths with options: ", path_configs);
     console.log("filtered graph: ", filtered_graph);
+
+    // start the path recommender spinner
+    set_path_gen_spinner_enabled(true);
 
     let test_enabled = false;
     if (test_enabled) {
@@ -108,6 +117,7 @@ async function recommend_paths(path_configs) {
 
     // process and draw the paths
     ).then((jsons) => {
+
         // associate each returned stats and path with the algorithm name
         let alg_results = {};
         for (let i = 0; i < path_configs.length; i++) {
@@ -118,6 +128,10 @@ async function recommend_paths(path_configs) {
             };
         }
         process_paths(alg_results);
+
+        // disable the path recommender spinner
+        set_path_gen_spinner_enabled(false);
+        
     }).catch(err => console.log(err));
 }
 

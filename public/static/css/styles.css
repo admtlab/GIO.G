@@ -698,6 +698,30 @@ html, body {
 
 /* ---------------------------------- misc ---------------------------------- */
 
+
+.spinner-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    vertical-align: middle;
+}
+
+.spinner {
+    border: 3px solid #2374ff;
+    border-top: 3px solid #EEEEEE;
+    border-radius: 50%;
+    height: 15px;
+    width: 15px;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .error-text {
     color: red;
 }
