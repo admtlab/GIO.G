@@ -18,11 +18,11 @@ To simplify running the web interface, we have also included a dockerfile to run
 
 1. Build Image
     ```
-    docker build -t GIO.G .
+    docker build -t gio.g .
     ```
 2. Start Container
     ```
-    docker run -it -p 9000:9000 GIO.G
+    docker run -it -p 9000:9000 gio.g
     ```
 
 ## Running - Command-line Interface
