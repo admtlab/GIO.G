@@ -508,9 +508,7 @@ function coords_eq(p1, p2, tol=0.0001) {
 
 // helper method to determine if lines are equal
 function lines_eq(l1, l2, tol=0.0001) {
-
-    return (coords_eq(l1[0], l2[0], tol) && coords_eq(l1[1], l2[1], tol)) || (coords_eq(l1[0], l2[1], tol) && coords_eq(l1[1], l2[0], tol))
-
+    return (coords_eq(l1[0], l2[0], tol) && coords_eq(l1[1], l2[1], tol)) || (coords_eq(l1[0], l2[1], tol) && coords_eq(l1[1], l2[0], tol));
 }
 
 

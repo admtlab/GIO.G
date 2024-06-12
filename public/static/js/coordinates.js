@@ -424,6 +424,9 @@ function find_building_effective_walls(cell_info) {
 
         let line = [new_p1, new_p2];
         effective_grid_walls.push(line);
+        
+        // set the map from the effective wall index to the outline wall index
+        cell_info.building_mods.effective_to_outline_wall[effective_grid_walls.length - 1] = i;
     }
 
     cell_info.building_mods.effective_grid_walls = effective_grid_walls;
@@ -470,6 +473,8 @@ function update_doors_to_effective_walls(cell_info) {
         let line_direction = calc_line_orthogonal_direction(best_point_and_line.line[0], best_point_and_line.line[1]);
         door_mod.wall_direction = line_direction;
         door_mod.attached_wall = best_point_and_line.line;
+        let attached_wall_index = effective_walls.indexOf(door_mod.attached_wall);
+        door_mod.attached_wall_outline_index = cell_info.building_mods.effective_to_outline_wall[attached_wall_index];
 
         // set door's new coordinates (and convert index back to 1-indexed)
         door.x = best_point_and_line.point.x + 1;

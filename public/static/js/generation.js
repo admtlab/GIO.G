@@ -163,6 +163,9 @@ function add_new_building_door(cell_info) {
     door.x = best_point_and_line.point.x + 1;
     door.y = best_point_and_line.point.y + 1;
 
+    // get index of attached wall in the outline
+    let attached_wall_outline_index = building_mods.effective_to_outline_wall[building_mods.effective_grid_walls.indexOf(best_point_and_line.line)];
+
     // create a new door modification object
     let door_mod =  {
         open: true,
@@ -170,6 +173,7 @@ function add_new_building_door(cell_info) {
         last_drag_time: 0,
         wall_direction: line_direction,
         attached_wall: best_point_and_line.line,
+        attached_wall_outline_index: attached_wall_outline_index,
         editor_highlighted: false
     };
 

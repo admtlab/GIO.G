@@ -178,6 +178,9 @@ function process_building(building, cell_info_override=null, skip_outline_calc=f
 
     // calculate the corridors for the given building
     calculate_building_corridors(cell_info);
+
+    // calculate the corridors for the given building
+    calculate_building_corridor_graph(cell_info);
 }
 
 
@@ -252,13 +255,15 @@ function new_empty_grid_cell() {
             next_new_door_id: 1,
             outline_grid_path: [],
             outline_grid_walls: [],
+            effective_to_outline_wall: {},
             con_level: null,
             outline_grid_center: null,
             effective_grid_walls: [],
             normalized_grid_outline: [],
             normalized_bounding_rect: [],
             normal_offset: null,
-            connected_building_coords: []
+            connected_building_coords: [],
+            corridor_graph: null
         }
     };
 
@@ -323,6 +328,7 @@ function init_grid_cell_info(building) {
             last_drag_time: 0,
             wall_direction: "none",
             attached_wall: null,
+            attached_wall_outline_index: -1,
             editor_highlighted: false,
             orientation: null,
             path_count: 0,
