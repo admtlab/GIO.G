@@ -178,9 +178,6 @@ function process_building(building, cell_info_override=null, skip_outline_calc=f
 
     // calculate the corridors for the given building
     calculate_building_corridors(cell_info);
-
-    // calculate the corridors for the given building
-    calculate_building_corridor_graph(cell_info);
 }
 
 

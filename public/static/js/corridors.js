@@ -340,8 +340,6 @@ class CorridorGraph {
 
     // find a node that has a given door id
     node_with_door_id(door_id) {
-
-        console.log(door_id)
         
         for (let ni = 0; ni < this.min_span_nodes.length; ni++) {
             let node = this.min_span_nodes[ni];
@@ -359,7 +357,6 @@ class CorridorGraph {
         // get the nodes associated with each door id
         let start_node = this.node_with_door_id(start_door_id);
         let end_node = this.node_with_door_id(end_door_id);
-        console.log(start_node, end_node);
 
         // check if matching nodes were found
         if (start_node === null || end_node === null) {
@@ -369,11 +366,73 @@ class CorridorGraph {
         // return coordinates of nodes in a path
         return this.find_path(start_node, end_node, true);
     }
+
+    // get arbitrary node that has a door
+    get_door_node() {
+
+        for (let ni = 0; ni < this.min_span_nodes.length; ni++) {
+            let node = this.min_span_nodes[ni];
+            if (node.door_id != -1) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    // get a path that fully connects every node
+    get_full_path(coordinates_result=true) {
+
+        let min_span_nodes = this.min_span_nodes;
+        if (min_span_nodes.length === 0) {
+            return [];
+        }
+        
+        let path = [];
+        let visited = [];
+
+        // recursive function to find the path between nodes
+        function find_path_rec(curr_node) {
+            
+            // push the current node onto the path
+            path.push(curr_node);
+            visited.push(curr_node);
+
+            // recursive call for each of the node's children
+            for (let ni = 0; ni < curr_node.mst_children.length; ni++) {
+                let child_node = curr_node.mst_children[ni];
+
+                if (visited.indexOf(child_node) > -1) {
+                    continue;
+                }
+
+                find_path_rec(child_node);
+                path.push(curr_node);
+            }
+            
+            // recursive call for the node's parent
+            if (curr_node.mst_parent !== null && visited.indexOf(curr_node.mst_parent) === -1) {
+                find_path_rec(curr_node.mst_parent);
+                path.push(curr_node);
+            }
+
+            return false;
+        }
+
+        // kickoff the recursive call
+        find_path_rec(this.get_door_node());
+
+        if (coordinates_result) {
+            path = path.map((node) => node.point);
+        }
+
+        return path;
+    }
 }
 
 
 // calculate building corridors
-function calculate_building_corridor_graph(cell_info) {
+function calculate_building_corridors(cell_info) {
 
     // console.log("calculating building corridor graph for: ", cell_info)
 
