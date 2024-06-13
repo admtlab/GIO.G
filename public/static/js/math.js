@@ -377,7 +377,11 @@ function calc_line_orthogonal_direction(p1, p2, tol=0.0001) {
         return "horizontal";
     }
 
-    return null;
+    // return whichever is closer
+    let x_diff = Math.abs(p1.x-p2.x);
+    let y_diff = Math.abs(p1.y-p2.y);
+
+    return x_diff < y_diff ? "horizontal" : "vertical";
 }
 
 
@@ -574,6 +578,21 @@ function simplify_path(points, closed, tol=0.0001) {
     new_points = new_points.filter(function(value, index) {
         return indexes_to_remove.indexOf(index) == -1;
     });
+
+    for (let i = 0; i < new_points.length; i++) {
+
+        let curr_point = new_points[i];
+        let next_point = new_points[(i+1)%new_points.length];
+
+        // check if points are in a line in the x direction
+        if (floats_eq(curr_point.x, next_point.x, tol)) {
+            next_point.x = curr_point.x;
+        }
+        // check if points are in a line in the y direction
+        if (floats_eq(curr_point.y, next_point.y, tol)) {
+            next_point.y = curr_point.y;
+        }
+    }
 
     return new_points;
 }

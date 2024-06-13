@@ -385,7 +385,7 @@ function create_building_outline_path(cell_info) {
     }
 
     // simplify the grid path by removing duplicate points and points on the same line
-    grid_shape_path = simplify_path(grid_shape_path, true, 0.005);
+    grid_shape_path = simplify_path(grid_shape_path, true, 0.001);
 
     // running twice seems to help? TODO: not a perfect solution, and may introduce more bugs...
     grid_shape_path = elimate_self_intersections(grid_shape_path);
@@ -1210,86 +1210,36 @@ function find_all_doors_orientations(cell_info) {
 
 
 // calculate and set the orientation of a given door
-function find_door_orientation(cell_info, door_id, door_grid_coords_override=null, wall_direction_override=null) {
+function find_door_orientation(cell_info, door_id) {
 
-    let door_mods = cell_info.building_mods.entrance_mods;
+    let building_mods = cell_info.building_mods;
+    let door_mods = building_mods.entrance_mods;
     let door_mod = door_mods[door_id];
-    let door_grid_coords = door_grid_coords_override !== null ? door_grid_coords_override : grid_coords_for_building_or_door(door_mod.data_ref);
 
-    let building_grid_coords = estimate_building_grid_coords(door_grid_coords);
-    let building_id = grid_coords_to_building_id(building_grid_coords);
+    let attached_wall_index = door_mod.attached_wall_outline_index;
+    let wall = building_mods.outline_grid_walls[attached_wall_index];
 
-    let direction = wall_direction_override !== null ? wall_direction_override : door_mod.wall_direction;
-    
-    let orientation = null;
-    let walls = cell_info.building_mods.outline_grid_walls;
-    
-    // TODO: i tried to increase the precision and reduce the number of edge cases by adding more far lines then averaging them, however that just made it worse ...
-    let far_door_grid_coords_list = [
-        {x: door_grid_coords.x - grid.length * 2, y: door_grid_coords.y  - grid.length * 2},
-    ];
+    let wall_direction = calc_line_orthogonal_direction(wall[0], wall[1], 0.001);
+    let door_orientation = null;
 
-    let offset_door_grid_coords = null;
-
-    // door is vertical
-    if (direction === "vertical") {
-
-        // guess offset is point inside building
-        offset_door_grid_coords = {
-            x: door_grid_coords.x+door_len_ratio/4, // offset is arbitrary, assuming it is small enough where it won't pass through other side of skinny building,
-            y: door_grid_coords.y
-        };
-
-    // door is horizontal
-    } else {
-
-        // guess offset is point inside building
-        offset_door_grid_coords = {
-            x: door_grid_coords.x, 
-            y: door_grid_coords.y+door_len_ratio/4 // offset is arbitrary, assuming it is small enough where it won't pass through other side of skinny building,
-        };
-    }
-
-    // create lines from the far point to the offset door coords
-    let from_far_lines = far_door_grid_coords_list.map(far_door_grid_coords => [far_door_grid_coords, offset_door_grid_coords]);
-    let num_intersections = 0;
-
-    // calculate the number of intersections of line to right/left borders with each wall
-    walls.forEach(function (wall) {
-
-        for (let i = 0; i < from_far_lines.length; i++) {
-
-            let from_far_line = from_far_lines[i];
-            let intersection_point = calc_lines_intersection(from_far_line, wall);
-
-            if (intersection_point !== null) {
-                num_intersections += 1;
-            }
-        }
-    });
-
-    // get the average number of intersections based on the number of far lines used
-    let avg_num_intersections = Math.round(num_intersections / from_far_lines.length);
-
-    // determine door direction by checking if offset guess was correct
-    if (direction === "vertical") {
-        if (avg_num_intersections % 2 === 0) {
-            orientation = "right";
+    // find a far away perpendicular point
+    if (wall_direction === "horizontal") {
+        if (wall[0].x > wall[1].x) {
+            door_orientation = "down";
         } else {
-            orientation = "left";
+            door_orientation = "up";
+        }
+    } else if (wall_direction === "vertical") {
+        if (wall[0].y > wall[1].y) {
+            door_orientation = "left";
+        } else {
+            door_orientation = "right";
         }
     } else {
-        if (avg_num_intersections % 2 === 0) {
-            orientation = "down";
-        } else {
-            orientation = "up";
-        }
+        console.log("could not find wall orientation", wall)
     }
 
-    if (door_id !== null) {
-        // set the orientation of the door
-        door_mod.orientation = orientation;
-    }
+    door_mod.orientation = door_orientation;
 }
 
 

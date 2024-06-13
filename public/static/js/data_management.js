@@ -176,8 +176,12 @@ function process_building(building, cell_info_override=null, skip_outline_calc=f
     // find orientation of doors
     find_all_doors_orientations(cell_info);
 
-    // calculate the corridors for the given building
-    calculate_building_corridors(cell_info);
+    try {
+        // calculate the corridors for the given building
+        calculate_building_corridors(cell_info);
+    } catch(e) {
+        console.log(e);
+    }
 }
 
 
@@ -842,7 +846,11 @@ function count_paths_through_doors() {
 
             if (cell_info !== null) {
                 // increase the path counter for the given door
-                cell_info.building_mods.entrance_mods[door_id].path_count++;
+                if (cell_info.building_mods.entrance_mods[door_id] == null) {
+                    console.log("bad door id: ", door_id, cell_info);
+                } else {
+                    cell_info.building_mods.entrance_mods[door_id].path_count++;
+                }
             }
         }
     }
