@@ -506,6 +506,8 @@ function set_path_gen_spinner_enabled(enabled) {
 // updates the active class of the various toggle buttons
 function update_toggle_buttons_active() {
 
+    // TODO: all of the toggle methods are calling this instead of the individual one...
+
     // display options
     update_toggle_button_active(document.getElementById("toggle-buildings-button"), building_layer.visible());
     update_toggle_button_active(document.getElementById("toggle-corridors-button"), building_corridors_enabled);
@@ -750,6 +752,16 @@ function handle_auto_path_endpoint_reset_button(button) {
     auto_reset_path_endpoints_enabled = !auto_reset_path_endpoints_enabled;
 
     update_toggle_buttons_active(button, auto_reset_path_endpoints_enabled);
+}
+
+
+// toggles corridor dots variable
+function handle_corridor_dots_button(button) {
+    corridor_graph_debug_dots_enabled = !corridor_graph_debug_dots_enabled;
+
+    update_toggle_button_active(button, !corridor_graph_debug_dots_enabled);
+
+    draw_main_stage();
 }
 
 

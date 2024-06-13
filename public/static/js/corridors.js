@@ -11,10 +11,11 @@ class CorridorGraph {
         this.min_span_nodes = [];
         this.pruned_close_wall_nodes = [];
         this.pruned_dead_end_nodes = [];
+        this.pruned_marked_nodes = [];
     }
 
     // add a new line to the graph
-    add_line(line, start_point_door_id=-1) {
+    add_line(line, start_point_door_id=-1, remove_later=false) {
 
         this.attempted_lines.push(line);
 
@@ -54,7 +55,8 @@ class CorridorGraph {
         let new_edge = {
             line: line,
             orientation: line_orientation,
-            nodes: []
+            nodes: [],
+            remove_later: remove_later
         };
 
         // add the line's start point as a node if enabled
@@ -183,6 +185,9 @@ class CorridorGraph {
         // reset the node neighbors
         this.set_node_neighbors();
 
+        // prune marked nodes
+        this.prune_marked_nodes_pre_mst()
+
         // prune nodes near walls 
         this.prune_near_walls_pre_mst(door_len_ratio);
 
@@ -224,8 +229,9 @@ class CorridorGraph {
             // set the mst_weights of the new node's neighbors
             for (let ni = 0; ni < next_node.neighbors.length; ni++) {
                 let node = next_node.neighbors[ni];
-                let mst_weight = calc_dist(next_node.point, node.point);
+                // let mst_weight = calc_dist(next_node.point, node.point);
                 // let mst_weight = -1 * calc_dist_to_lines(this.outline_walls, node.point);
+                let mst_weight = calc_dist(next_node.point, node.point) + -1 * calc_dist_to_lines(this.outline_walls, node.point);
 
                 // update the mst_weight and parent of the neighbor if it is better than the current mst_weight
                 if (this.min_span_nodes.indexOf(node) === -1 && mst_weight < node.mst_weight) {
@@ -366,6 +372,35 @@ class CorridorGraph {
                 }
             }
         }
+    }
+
+    // prune nodes from marked edges
+    prune_marked_nodes_pre_mst() {
+
+        // iterate over every edge
+        for (let edge of this.edges) {
+
+            // only process marked edges
+            if (!edge.remove_later) {
+                continue;
+            }
+
+            // remove every node from the edge if possible
+            for (let node of edge.nodes) {
+
+                // only check non articulation, non door points
+                let articular = this.node_is_articular_pre_mst(node);
+                if (articular || node.door_id > -1) {
+                    continue;
+                }
+
+                this.remove_node_from_edges(node);
+                this.pruned_marked_nodes.push(node);
+            }
+        }
+
+        // reset the neighbors of remaining nodes
+        this.set_node_neighbors();
     }
 
     // find path from one node to another node
@@ -691,13 +726,14 @@ function calculate_building_corridors(cell_info) {
     // find line from split to boundary for every edge
     for (let ei = 0; ei < edges.length; ei++) {
         let edge = edges[ei];
+        let remove_later = calc_dist(edge.edge[0], edge.edge[1]) < door_len_ratio;
 
         // iterate over every split in the edge
         for (let si = 0; si < edge.splits.length; si++) {
             let split = edge.splits[si];
             let midpoint = calc_midpoint(split[0], split[1]);
 
-            corridor_graph_find_internal_line(graph, edges, midpoint, ei);
+            corridor_graph_find_internal_line(graph, edges, midpoint, ei, -1, remove_later);
         }
     }
 
@@ -714,7 +750,7 @@ function calculate_building_corridors(cell_info) {
 
         // add line from door
         let door_coords = grid_coords_for_building_or_door(door_mod.data_ref);
-        corridor_graph_find_internal_line(graph, edges, door_coords, door_mod.attached_wall_outline_index, door_id);
+        corridor_graph_find_internal_line(graph, edges, door_coords, door_mod.attached_wall_outline_index, door_id, false);
     }
 
     // construct the minimum spanning tree for the corridor graph
@@ -723,7 +759,7 @@ function calculate_building_corridors(cell_info) {
 
 
 // find interior line to opposing wall from a point on a given wall
-function corridor_graph_find_internal_line(graph, edges, point, edge_index, start_point_door_id=-1) {
+function corridor_graph_find_internal_line(graph, edges, point, edge_index, start_point_door_id=-1, remove_later=false) {
     
     let edge = edges[edge_index];
 
@@ -779,5 +815,7 @@ function corridor_graph_find_internal_line(graph, edges, point, edge_index, star
 
     // line to add to graph
     let new_graph_line = [point, best_point];
-    graph.add_line(new_graph_line, start_point_door_id);
+    if (!remove_later) {
+        graph.add_line(new_graph_line, start_point_door_id, remove_later);
+    }
 }

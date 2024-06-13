@@ -747,6 +747,18 @@ function draw_corridors(cell_info, parent, for_main_stage) {
             corridors_group.add(circle);
         });
 
+        // nodes pruned by short starting lines
+        building_mods.corridor_graph.pruned_marked_nodes.forEach(node => {
+            let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
+            let circle = new Konva.Circle({
+                x: stage_coords.x,
+                y: stage_coords.y,
+                radius: 4,
+                fill: "yellow"
+            });
+            corridors_group.add(circle);
+        });
+
         // nodes pruned by being too close to a wall
         building_mods.corridor_graph.pruned_close_wall_nodes.forEach(node => {
             let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
