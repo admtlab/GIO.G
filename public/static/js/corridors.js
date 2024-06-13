@@ -3,42 +3,46 @@
 class CorridorGraph {
     
     // initialize the graph
-    constructor() {
+    constructor(outline_walls) {
         this.nodes = [];
         this.edges = [];
-        this.temp_lines = [];
-        this.min_span_edges = [];
+        this.outline_walls = outline_walls;
+        this.attempted_lines = [];
         this.min_span_nodes = [];
+        this.pruned_close_wall_nodes = [];
+        this.pruned_dead_end_nodes = [];
     }
 
     // add a new line to the graph
     add_line(line, start_point_door_id=-1) {
 
-        this.temp_lines.push(line);
+        this.attempted_lines.push(line);
 
         // do not add lines that are already in the graph
         let edge = this.line_in_graph(line);
 
-        // TODO: attempted to not add duplicate lines (want to also support adding a door as an end point for existing lines)
-        // if (edge !== null) {
-        //     if (start_point_door_id > -1) {
-        //         let start_point = line[0];
+        // do not re-add duplicate lines
+        if (edge !== null) {
 
-        //         let found_node = false;
-        //         for (let ni = 0; ni < edge.nodes.length; ni++) {
-        //             let node = edge.nodes[ni];
-        //             if (coords_eq(node.point, start_point)) {
-        //                 found_node = true;
-        //                 break;
-        //             }
-        //         }
+            // add new node for door if it is defined and not currently in the nodes list
+            if (start_point_door_id > -1) {
+                let start_point = line[0];
 
-        //         if (!found_node) {
-        //             edge.nodes.push(this.create_node(start_point));
-        //         }
-        //     }
-        //     return;
-        // }
+                let found_node = false;
+                for (let ni = 0; ni < edge.nodes.length; ni++) {
+                    let node = edge.nodes[ni];
+                    if (coords_eq(node.point, start_point, 0.001)) {
+                        found_node = true;
+                        break;
+                    }
+                }
+
+                if (!found_node) {
+                    this.create_node(start_point, start_point_door_id, [edge]);
+                }
+            }
+            return;
+        }
 
         // determine if the line is vertical or horizontal
         let line_orientation = calc_line_orthogonal_direction(line[0], line[1]);
@@ -55,9 +59,7 @@ class CorridorGraph {
 
         // add the line's start point as a node if enabled
         if (start_point_door_id > -1) {
-            let node = this.create_node(line[0], start_point_door_id);
-            new_edge.nodes.push(node);
-            this.nodes.push(node);
+            this.create_node(line[0], start_point_door_id, [new_edge]);
         }
 
         // check intersections with all other edges in the graph
@@ -76,12 +78,7 @@ class CorridorGraph {
             }
 
             // create a node for the intersection
-            let node = this.create_node(intersection);
-
-            // add the node to the parent edges and graph
-            new_edge.nodes.push(node);
-            edge.nodes.push(node);
-            this.nodes.push(node);
+            this.create_node(intersection, -1, [edge, new_edge]);
         }
         
         // add the new edge to the graph
@@ -94,7 +91,7 @@ class CorridorGraph {
         for (let ei = 0; ei < this.edges.length; ei++) {
             let edge = this.edges[ei];
 
-            if (lines_eq(line, edge.line)) {
+            if (lines_eq(line, edge.line, 0.001)) {
                 return edge;
             }
         }
@@ -103,19 +100,22 @@ class CorridorGraph {
     }
 
     // creates a new node for a given point
-    create_node(point, door_id=-1) {
-        return {
+    create_node(point, door_id=-1, on_edges=[]) {
+        let node = {
             point: point,
             door_id: door_id,
+            on_edges: on_edges,
             left: null,
             right: null,
             up: null,
             down: null,
-            weight: Number.MAX_SAFE_INTEGER,
-            mst_parent: null,
+            neighbors: [],
+            mst_weight: Number.MAX_SAFE_INTEGER,
             mst_children: [],
-            neighbors: []
+            mst_parent: null
         };
+        this.nodes.push(node);
+        on_edges.forEach((edge) => edge.nodes.push(node));
     }
 
     // sets the neighbors of nodes in each edge
@@ -158,7 +158,7 @@ class CorridorGraph {
                 // sort the nodes based on their y coordinate
                 edge.nodes.sort((a, b) => a.point.y - b.point.y);
 
-                // set the right / left field for each node in the horizontal line
+                // set the up / down field for each node in the vertical line
                 for (let ni = 0; ni < edge.nodes.length - 1; ni++) {
 
                     let curr_node = edge.nodes[ni];
@@ -179,29 +179,32 @@ class CorridorGraph {
         if (this.nodes.length === 0) {
             return;
         }
-
+        
         // reset the node neighbors
         this.set_node_neighbors();
 
-        this.min_span_edges = [];
+        // prune nodes near walls 
+        this.prune_near_walls_pre_mst(door_len_ratio);
+
         this.min_span_nodes = [];
 
-        // set all nodes weight to max
+        // set all nodes mst_weight to max
         this.nodes.forEach(node => {
-            node.weight = Number.MAX_SAFE_INTEGER;
+            node.mst_weight = Number.MAX_SAFE_INTEGER;
             node.mst_children = [];
+            node.mst_parent = null;
         });
 
-        // set the weight of the first node to 0
-        this.nodes[0].weight = 0;
+        // set the mst_weight of the first node to 0
+        this.nodes[0].mst_weight = 0;
         
         // construct the spanning tree
         while (this.min_span_nodes.length < this.nodes.length) {
 
-            this.nodes.sort((a, b) => a.weight - b.weight);
+            this.nodes.sort((a, b) => a.mst_weight - b.mst_weight);
             let next_node = null;
 
-            // find the node not in the minimum spanning nodes with the minimum weight
+            // find the node not in the minimum spanning nodes with the minimum mst_weight
             for (let ni = 0; ni < this.nodes.length; ni++) {
                 let node = this.nodes[ni];
                 if (this.min_span_nodes.indexOf(node) === -1) {
@@ -215,36 +218,86 @@ class CorridorGraph {
             if (next_node.mst_parent !== null) {
                 // this.min_span_edges.push([next_node.point, next_node.mst_parent.point]);
                 next_node.mst_parent.mst_children.push(next_node);
+                next_node.mst_children.forEach(child => child.mst_parent = next_node);
             }
             
-            // set the weights of the new node's neighbors
+            // set the mst_weights of the new node's neighbors
             for (let ni = 0; ni < next_node.neighbors.length; ni++) {
                 let node = next_node.neighbors[ni];
-                let weight = calc_dist(next_node.point, node.point);
+                let mst_weight = calc_dist(next_node.point, node.point);
+                // let mst_weight = -1 * calc_dist_to_lines(this.outline_walls, node.point);
 
-                // update the weight and parent of the neighbor if it is better than the current weight
-                if (this.min_span_nodes.indexOf(node) === -1 && weight < node.weight) {
-                    node.weight = weight;
+                // update the mst_weight and parent of the neighbor if it is better than the current mst_weight
+                if (this.min_span_nodes.indexOf(node) === -1 && mst_weight < node.mst_weight) {
+                    node.mst_weight = mst_weight;
                     node.mst_parent = next_node;
                 }
             }
         }
 
-        // remove endpoints that point to nowhere
-        this.prune_span();
+        // remove unnecessary nodes from mst
+        this.prune_dead_ends_mst();
+    }
 
-        // construct edges from nodes
-        this.min_span_nodes.forEach(node => {
-            if (node.mst_parent !== null) {
-                this.min_span_edges.push([node.point, node.mst_parent.point]);
+    // removes nodes with the given indexes from the min_span_nodes array
+    remove_min_span_nodes(indexes_to_remove) {
+
+        indexes_to_remove.sort((a,b)=>b-a);
+        indexes_to_remove.forEach((index) => {
+            let node = this.min_span_nodes[index];
+            this.pruned_dead_end_nodes.push(node);
+            if (node.mst_parent) {
+                node.mst_parent.mst_children.splice(node.mst_parent.mst_children.indexOf(node), 1);
             }
+            node.mst_children.forEach((child) => child.mst_parent = null);
+            this.min_span_nodes.splice(index, 1);
         });
+    }
 
-        // console.log(this.find_path(this.min_span_nodes[0], this.min_span_nodes[this.min_span_nodes.length-1]));
+    // remove node from edge lists
+    remove_node_from_edges(target_node) {
+
+        this.pruned_close_wall_nodes.push(target_node);
+
+        let main_index = this.nodes.indexOf(target_node);
+        // remove the node from the main nodes list
+        if (main_index > -1) {
+            this.nodes.splice(main_index, 1);
+        }
+        
+        // remove the node from the edges list and fix children
+        for (let ei = 0; ei < target_node.on_edges.length; ei++) {
+            let edge = target_node.on_edges[ei];
+            
+            let index = edge.nodes.indexOf(target_node);
+            if (index > -1) {
+                edge.nodes.splice(index, 1);
+            }
+        }
+
+        // set the node's neighbors if necessary
+        // if (target_node.up !== null) {
+        //     target_node.up.down = target_node.down;
+        //     target_node.up.neighbors.splice(target_node.up.neighbors.indexOf(target_node), 1);
+        // }
+        // if (target_node.down !== null) {
+        //     target_node.down.up = target_node.up;
+        //     target_node.down.neighbors.splice(target_node.down.neighbors.indexOf(target_node), 1);
+        // }
+        // if (target_node.left !== null) {
+        //     target_node.left.right = target_node.right;
+        //     target_node.left.neighbors.splice(target_node.left.neighbors.indexOf(target_node), 1);
+        // }
+        // if (target_node.right !== null) {
+        //     target_node.right.left = target_node.left;
+        //     target_node.right.neighbors.splice(target_node.right.neighbors.indexOf(target_node), 1);
+        // }
+        // TODO: manually changing neighbors does not work properly so temporarily just resetting all neighbors
+        this.set_node_neighbors();
     }
 
     // prune spanning endpoints that do not lead to doors
-    prune_span() {
+    prune_dead_ends_mst() {
         
         if (this.min_span_nodes.length === 0) {
             return;
@@ -261,23 +314,57 @@ class CorridorGraph {
             for (let i = 0; i < this.min_span_nodes.length; i++) {
                 let node = this.min_span_nodes[i];
 
-                // remove nodes that do not have any children
-                if (node.door_id === -1 && node.mst_children.length === 0) {
+                let connections = node.mst_children.length;
+                if (node.mst_parent !== null) {
+                    connections++;
+                }
+
+                // remove nodes that only have one connection
+                if (node.door_id === -1 && connections === 1) {
                     indexes_to_remove.push(i);
                 }
             }
 
-            // remove nodes from the minimum spanning tree nodes list
-            indexes_to_remove.reverse();
-            indexes_to_remove.forEach((index) => {
-                let node = this.min_span_nodes[index];
-                if (node.mst_parent) {
-                    node.mst_parent.mst_children.splice(node.mst_parent.mst_children.indexOf(node), 1);
-                }
-                this.min_span_nodes.splice(index, 1);
-            });
-
+            // remove the nodes from the array
+            this.remove_min_span_nodes(indexes_to_remove);
             num_removed_nodes = indexes_to_remove.length;
+        }
+    }
+
+    // prune nodes close to walls
+    prune_near_walls_pre_mst(prune_dist) {
+
+        let num_removed_nodes = -1;
+
+        while (num_removed_nodes !== 0) {
+            num_removed_nodes = 0;
+            let nodes = [...this.nodes];
+
+            // check every node in the graph
+            for (let ni = 0; ni < nodes.length; ni++) {
+                let node = nodes[ni];
+    
+                // only check non articulation, non door points
+                let articular = this.node_is_articular_pre_mst(node);
+                if (articular || node.door_id > -1) {
+                    continue;
+                }
+    
+                // iterate over every edge in the building outline
+                for (let wi = 0; wi < this.outline_walls.length; wi++) {
+                    let wall = this.outline_walls[wi];
+    
+                    // get the distance to the 
+                    let dist = calc_dist_to_line(wall, node.point);
+    
+                    // remove the node if it is less than the minimum distance and not an articulation point
+                    if (dist <= prune_dist) {
+                        this.remove_node_from_edges(node);
+                        num_removed_nodes++;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -428,22 +515,122 @@ class CorridorGraph {
 
         return path;
     }
+
+    // checks if a given node is an articulation point in the mst graph
+    node_is_articular_mst(target_node) {
+
+        let min_span_nodes = this.min_span_nodes;
+        if (min_span_nodes.length === 0) {
+            return false;
+        } else if (min_span_nodes.length === 1 && min_span_nodes[0] === target_node) {
+            return true;
+        }
+        
+        let visited = [];
+
+        // recursive function to find the path between nodes
+        function find_path_rec(curr_node) {
+            
+            // push the current node onto the path
+            visited.push(curr_node);
+
+            // recursive call for each of the node's children
+            for (let ni = 0; ni < curr_node.mst_children.length; ni++) {
+                let child_node = curr_node.mst_children[ni];
+
+                if (visited.indexOf(child_node) > -1 || child_node === target_node) {
+                    continue;
+                }
+
+                find_path_rec(child_node);
+            }
+            
+            // recursive call for the node's parent
+            if (curr_node.mst_parent !== null && visited.indexOf(curr_node.mst_parent) === -1 && curr_node.mst_parent !== target_node) {
+                find_path_rec(curr_node.mst_parent);
+            }
+        }
+
+        // find a starting node that is not the target node
+        let starting_node = null;
+        for (let ni = 0; ni < min_span_nodes.length; ni++) {
+            let node = min_span_nodes[ni];
+            if (node !== target_node) {
+                starting_node = node;
+                break;
+            }
+        }
+
+        // kickoff the recursive call
+        find_path_rec(starting_node);
+
+        // check if the visited set was able to reach every other node
+        return visited.length < min_span_nodes.length - 1;
+    }
+
+    // checks if a pre-mst node is articular
+    node_is_articular_pre_mst(target_node) {
+
+        let nodes = this.nodes;
+        if (nodes.length === 0) {
+            return false;
+        } else if (nodes.length === 1 && nodes[0] === target_node) {
+            return true;
+        }
+        
+        let visited = [];
+
+        // recursive function to find the path between nodes
+        function find_path_rec(curr_node) {
+            
+            // push the current node onto the path
+            visited.push(curr_node);
+
+            // recursive call for each of the node's neighbors
+            for (let ni = 0; ni < curr_node.neighbors.length; ni++) {
+                let child_node = curr_node.neighbors[ni];
+
+                if (visited.indexOf(child_node) > -1 || child_node === target_node) {
+                    continue;
+                }
+
+                find_path_rec(child_node);
+            }
+        }
+
+        // find a starting node that is not the target node
+        let starting_node = null;
+        for (let ni = 0; ni < this.nodes.length; ni++) {
+            let node = this.nodes[ni];
+            if (node !== target_node) {
+                starting_node = node;
+                break;
+            }
+        }
+
+        // kickoff the recursive call
+        find_path_rec(starting_node);
+
+        // check if the visited set was able to reach every other node
+        // console.log("articular: ", visited.length < nodes.length - 1)
+        return visited.length < nodes.length - 1;
+    }
 }
 
 
 // calculate building corridors
 function calculate_building_corridors(cell_info) {
 
-    // console.log("calculating building corridor graph for: ", cell_info)
+    // console.log("calculating building corridor graph for: ", cell_info.building_data.id, cell_info)
 
-    let graph = new CorridorGraph();
+    let graph = new CorridorGraph(cell_info.building_mods.outline_grid_walls);
     cell_info.building_mods.corridor_graph = graph;
 
     // create an edge object for ever wall in the building
     let edges = cell_info.building_mods.outline_grid_walls.map((edge) => { 
         return {
             edge: edge,
-            orientation: calc_line_orthogonal_direction(edge[0], edge[1]),
+            orientation: calc_line_orthogonal_direction(edge[0], edge[1], 0.005),
             splits: []
         };
     });
@@ -465,15 +652,19 @@ function calculate_building_corridors(cell_info) {
             let comp_edge = edges[ej];
 
             // skip the same edge, adjacent edges, and parallel edges
-            if (ej === ei || ej === (ei + 1) % edges.length || (ei + edges.length - 1) % edges.length || edge.orientation === comp_edge.orientation) {
+            if (ej === ei || ej === (ei + 1) % edges.length || (ei + edges.length - 1) % edges.length /*|| edge.orientation === comp_edge.orientation*/) {
                 continue;
             }
 
             // check if the perpendicular line would split the current edge
-            if ((edge.orientation === "vertical" && (edge.edge[0].y < comp_edge.edge[0].y && edge.edge[1].y > comp_edge.edge[0].y))) {
+            if (edge.orientation === "vertical" && (edge.edge[0].y < comp_edge.edge[0].y && edge.edge[1].y > comp_edge.edge[0].y)) {
                 splits.push(comp_edge.edge[0].y);
+            } else if (edge.orientation === "vertical" && (edge.edge[0].y < comp_edge.edge[1].y && edge.edge[1].y > comp_edge.edge[1].y)) {
+                splits.push(comp_edge.edge[1].y);
             } else if (edge.orientation === "horizontal" && (edge.edge[0].x < comp_edge.edge[0].x && edge.edge[1].x > comp_edge.edge[0].x)) {
                 splits.push(comp_edge.edge[0].x);
+            } else if (edge.orientation === "horizontal" && (edge.edge[0].x < comp_edge.edge[1].x && edge.edge[1].x > comp_edge.edge[1].x)) {
+                splits.push(comp_edge.edge[1].x);
             }
         }
 
@@ -518,6 +709,8 @@ function calculate_building_corridors(cell_info) {
         if (door_mod.attached_wall_outline_index === -1) {
             continue;
         }
+
+        // console.log("door: ", door_id, "wall index: ", door_mod.attached_wall_outline_index)
 
         // add line from door
         let door_coords = grid_coords_for_building_or_door(door_mod.data_ref);

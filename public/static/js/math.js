@@ -186,6 +186,12 @@ function calc_closest_point_bounded(l1, l2, p, t1, t2) {
 }
 
 
+// helper method to calculate the distance from a point to a line
+function calc_dist_to_line(l, p) {
+    return calc_dist(calc_closest_point(l[0], l[1], p), p);
+}
+
+
 // helper method to calculate the nearest point on a line segment (defined by two points) from another point
 function calc_closest_point(l1, l2, p) {
     return calc_closest_point_bounded(l1, l2, p, 0, 1);
@@ -217,6 +223,13 @@ function calc_closest_point_to_shape(shape_points, point) {
     }
 
     return best_point
+}
+
+
+// helper function to calculate the closest distance from a point to a list of lines
+function calc_dist_to_lines(lines, point) {
+    let best_point = calc_closest_point_to_lines(lines, point);
+    return calc_dist(best_point, point);
 }
 
 
@@ -347,20 +360,20 @@ function calc_closest_point_to_points(points_set, point) {
 
 
 // helper method to determine if a line is vertical or horizontal
-function calc_line_orthogonal_direction(p1, p2) {
+function calc_line_orthogonal_direction(p1, p2, tol=0.0001) {
 
     // check if the points are the same
-    if (floats_eq(p1.x, p2.x) && floats_eq(p1.y, p2.y)) {
+    if (floats_eq(p1.x, p2.x, tol) && floats_eq(p1.y, p2.y, tol)) {
         return null;
     }
 
     // check if points are vertical
-    if (floats_eq(p1.x, p2.x)) {
+    if (floats_eq(p1.x, p2.x, tol)) {
         return "vertical";
     }
 
     // check if points are horizontal
-    if (floats_eq(p1.y, p2.y)) {
+    if (floats_eq(p1.y, p2.y, tol)) {
         return "horizontal";
     }
 

@@ -385,7 +385,7 @@ function create_building_outline_path(cell_info) {
     }
 
     // simplify the grid path by removing duplicate points and points on the same line
-    grid_shape_path = simplify_path(grid_shape_path, true, 0.0001);
+    grid_shape_path = simplify_path(grid_shape_path, true, 0.005);
 
     // running twice seems to help? TODO: not a perfect solution, and may introduce more bugs...
     grid_shape_path = elimate_self_intersections(grid_shape_path);

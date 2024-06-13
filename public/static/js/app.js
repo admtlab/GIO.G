@@ -72,6 +72,8 @@ let can_pan_enabled = true;
 let can_zoom_enabled = true;
 let auto_open_sections_enabled = true;
 let auto_reset_path_endpoints_enabled = true;
+let corridor_graph_debug_dots_enabled = false;
+let corridor_graph_debug_lines_enabled = false;
 
 let road_rand_weight_min = 0.35;
 let road_rand_weight_max = 1.25;

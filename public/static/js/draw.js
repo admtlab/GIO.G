@@ -670,6 +670,96 @@ function draw_corridors(cell_info, parent, for_main_stage) {
     });
     corridors_group.add(corridor_line);
 
+    // draw debug lines if enabled
+    if (corridor_graph_debug_lines_enabled) {
+        building_mods.corridor_graph.edges.forEach(edge => {
+            let stage_coords = edge.line.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+            let line = new Konva.Line({
+                points: flatten_points(stage_coords),
+                stroke: "black",
+                strokeWidth: corridor_width/2,
+                closed: false
+            });
+            corridors_group.add(line);
+        });
+
+        // building_mods.outline_grid_walls.forEach(wall => {
+        //     let stage_coords = wall.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+        //     let midpoint = calc_midpoint(stage_coords[0], stage_coords[1]);
+        //     let circle = new Konva.Circle({
+        //         x: midpoint.x,
+        //         y: midpoint.y, 
+        //         radius: 4,
+        //         fill: "purple"
+        //     });
+        //     corridors_group.add(circle);
+        // });
+
+        building_mods.corridor_graph.attempted_lines.forEach(points => {
+            let stage_coords = points.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+            let line = new Konva.Line({
+                points: flatten_points(stage_coords),
+                stroke: "black",
+                strokeWidth: corridor_width/2,
+                closed: false
+            });
+            corridors_group.add(line);
+        });
+
+    }
+
+    // draw debug dots if enabled
+    if (corridor_graph_debug_dots_enabled) {
+
+        // every node starts as gray
+        building_mods.corridor_graph.nodes.forEach(node => {
+            let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
+            let circle = new Konva.Circle({
+                x: stage_coords.x,
+                y: stage_coords.y,
+                radius: 6,
+                fill: "grey"
+            });
+            corridors_group.add(circle);
+        });
+
+        // nodes in the minimum spanning tree
+        building_mods.corridor_graph.min_span_nodes.forEach(node => {
+            let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
+            let circle = new Konva.Circle({
+                x: stage_coords.x,
+                y: stage_coords.y,
+                radius: 5,
+                fill: "blue"
+            });
+            corridors_group.add(circle);
+        });
+
+        // nodes pruned by being dead ends
+        building_mods.corridor_graph.pruned_dead_end_nodes.forEach(node => {
+            let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
+            let circle = new Konva.Circle({
+                x: stage_coords.x,
+                y: stage_coords.y,
+                radius: 4,
+                fill: "green"
+            });
+            corridors_group.add(circle);
+        });
+
+        // nodes pruned by being too close to a wall
+        building_mods.corridor_graph.pruned_close_wall_nodes.forEach(node => {
+            let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
+            let circle = new Konva.Circle({
+                x: stage_coords.x,
+                y: stage_coords.y,
+                radius: 3,
+                fill: "red"
+            });
+            corridors_group.add(circle);
+        });
+    }
+
     if (!building_corridors_enabled) {
         corridors_group.hide();
     }
