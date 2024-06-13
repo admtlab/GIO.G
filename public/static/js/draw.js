@@ -659,20 +659,20 @@ function draw_corridors(cell_info, parent, for_main_stage) {
     }
 
     // iterate over every stored corridor path 
-    for (let i = 0; i < building_mods.corridor_all_grid_paths.length; i++) {
+    // for (let i = 0; i < building_mods.corridor_all_grid_paths.length; i++) {
 
-        let corridor_grid_path = building_mods.corridor_all_grid_paths[i];
-        let corridor_stage_path = corridor_grid_path.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+    //     let corridor_grid_path = building_mods.corridor_all_grid_paths[i];
+    //     let corridor_stage_path = corridor_grid_path.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
 
-        // draw the wall itself
-        let corridor_line = new Konva.Line({
-            points: flatten_points(corridor_stage_path),
-            stroke: corridor_color,
-            strokeWidth: corridor_width,
-            perfectDrawEnabled: false,
-        });
-        corridors_group.add(corridor_line);
-    }
+    //     // draw the wall itself
+    //     let corridor_line = new Konva.Line({
+    //         points: flatten_points(corridor_stage_path),
+    //         stroke: corridor_color,
+    //         strokeWidth: corridor_width,
+    //         perfectDrawEnabled: false,
+    //     });
+    //     corridors_group.add(corridor_line);
+    // }
 
     if (!building_corridors_enabled) {
         corridors_group.hide();
@@ -697,35 +697,67 @@ function test_draw_corridors(cell_info, parent, for_main_stage) {
     let corridors_group = new Konva.Group();
 
     // iterate over every stored corridor path 
-    for (let i = 0; i < building_mods.corridor_graph.temp_lines.length; i++) {
-        let corridor_grid_path = building_mods.corridor_graph.temp_lines[i];
+    for (let i = 0; i < building_mods.corridor_graph.min_span_edges.length; i++) {
+        let corridor_grid_path = building_mods.corridor_graph.min_span_edges[i];
         let corridor_stage_path = corridor_grid_path.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
 
         // draw the wall itself
         let corridor_line = new Konva.Line({
             points: flatten_points(corridor_stage_path),
-            stroke: "red",
-            strokeWidth: corridor_width/2,
+            stroke: corridor_color,
+            strokeWidth: corridor_width,
             perfectDrawEnabled: false,
+            lineCap: "square",
         });
         corridors_group.add(corridor_line);
     }
 
-    for (let i = 0; i < building_mods.corridor_graph.nodes.length; i++) {
-        let node = building_mods.corridor_graph.nodes[i];
+    // add line for every node in the graph
+    // for (let i = 0; i < building_mods.corridor_graph.nodes.length; i++) {
+    //     let node = building_mods.corridor_graph.nodes[i];
+
+    //     for (let ni = 0; ni < node.neighbors.length; ni++) {
+    //         let neighbor = node.neighbors[ni];
+    //         let corridor_grid_path = [node.point, neighbor.point];
+    //         let corridor_stage_path = corridor_grid_path.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+
+    //         // draw the wall itself
+    //         let corridor_line = new Konva.Line({
+    //             points: flatten_points(corridor_stage_path),
+    //             stroke: corridor_color,
+    //             strokeWidth: corridor_width,
+    //             perfectDrawEnabled: false,
+    //         });
+    //         corridors_group.add(corridor_line);
+    //     }
+    // }
+
+    for (let i = 0; i < building_mods.corridor_graph.min_span_nodes.length; i++) {
+        let node = building_mods.corridor_graph.min_span_nodes[i];
 
         let stage_coords = door_grid_coords_to_stage_coords(node.point, building_grid_coords, for_main_stage);
 
         let circle = new Konva.Circle({
             x: stage_coords.x, 
             y: stage_coords.y, 
-            radius: 5,
+            radius: 2,
             fill: "blue"
         });
         corridors_group.add(circle);
     }
 
-    // console.log(building_mods.corridor_graph)
+    // console.log(this.find_path(this.min_span_nodes[0], this.min_span_nodes[this.min_span_nodes.length-1]));
+    // let graph = cell_info.building_mods.corridor_graph;
+    // let path = graph.find_door_path(1, 2, true);
+    // console.log(path)
+    // let stage_path = path.map(coords => door_grid_coords_to_stage_coords(coords, building_grid_coords, for_main_stage));
+    // let corridor_line = new Konva.Line({
+    //     points: flatten_points(stage_path),
+    //     stroke: "red",
+    //     strokeWidth: corridor_width,
+    //     perfectDrawEnabled: false,
+    // });
+    // corridors_group.add(corridor_line);
 
     parent.add(corridors_group);
 }

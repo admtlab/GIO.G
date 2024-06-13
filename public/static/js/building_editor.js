@@ -554,6 +554,9 @@ function selected_door_moved(cell_info, door_id, editor_door_shape) {
 
     // recalculate door corridors
     calculate_building_corridors(cell_info);
+
+    // calculate the corridors for the given building
+    calculate_building_corridor_graph(cell_info);
     
     // redraw the building to reflect the changes in position
     redraw_selected_building(cell_info);
@@ -604,6 +607,9 @@ function handle_delete_door_button(cell_info, door_id) {
     // recalculate door corridors
     calculate_building_corridors(cell_info);
 
+    // calculate the corridors for the given building
+    calculate_building_corridor_graph(cell_info);
+
     // redraw the building to reflect the changes in doors
     redraw_selected_building(cell_info);
 
@@ -626,6 +632,9 @@ function handle_add_door_button(cell_info) {
 
     // recalculate door corridors
     calculate_building_corridors(cell_info);
+
+    // calculate the corridors for the given building
+    calculate_building_corridor_graph(cell_info);
 
     // redraw the building to display the new door
     redraw_selected_building(cell_info);
