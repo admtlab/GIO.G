@@ -692,18 +692,19 @@ function calculate_building_corridors(cell_info) {
             }
 
             // check if the perpendicular line would split the current edge
-            if (edge.orientation === "vertical" && (edge.edge[0].y < comp_edge.edge[0].y && edge.edge[1].y > comp_edge.edge[0].y)) {
+            if (edge.orientation === "vertical" && (edge.edge[0].y <= comp_edge.edge[0].y && edge.edge[1].y >= comp_edge.edge[0].y)) {
                 splits.push(comp_edge.edge[0].y);
-            } else if (edge.orientation === "vertical" && (edge.edge[0].y < comp_edge.edge[1].y && edge.edge[1].y > comp_edge.edge[1].y)) {
+            } else if (edge.orientation === "vertical" && (edge.edge[0].y <= comp_edge.edge[1].y && edge.edge[1].y >= comp_edge.edge[1].y)) {
                 splits.push(comp_edge.edge[1].y);
-            } else if (edge.orientation === "horizontal" && (edge.edge[0].x < comp_edge.edge[0].x && edge.edge[1].x > comp_edge.edge[0].x)) {
+            } else if (edge.orientation === "horizontal" && (edge.edge[0].x <= comp_edge.edge[0].x && edge.edge[1].x >= comp_edge.edge[0].x)) {
                 splits.push(comp_edge.edge[0].x);
-            } else if (edge.orientation === "horizontal" && (edge.edge[0].x < comp_edge.edge[1].x && edge.edge[1].x > comp_edge.edge[1].x)) {
+            } else if (edge.orientation === "horizontal" && (edge.edge[0].x <= comp_edge.edge[1].x && edge.edge[1].x >= comp_edge.edge[1].x)) {
                 splits.push(comp_edge.edge[1].x);
             }
         }
 
         // sort the splits along the edge
+        splits = [...new Set(splits)];
         splits.sort((a,b) => a - b);
 
         // create line objects for each split
@@ -731,9 +732,14 @@ function calculate_building_corridors(cell_info) {
         // iterate over every split in the edge
         for (let si = 0; si < edge.splits.length; si++) {
             let split = edge.splits[si];
-            let midpoint = calc_midpoint(split[0], split[1]);
-
-            corridor_graph_find_internal_line(graph, edges, midpoint, ei, -1, remove_later);
+            let points = [
+                calc_midpoint(split[0], split[1]),
+                calc_weighted_midpoint(split[0], split[1], 0.25),
+                calc_weighted_midpoint(split[0], split[1], 0.75)
+            ];
+            for (let point of points) {
+                corridor_graph_find_internal_line(graph, edges, point, ei, -1, remove_later);
+            }
         }
     }
 

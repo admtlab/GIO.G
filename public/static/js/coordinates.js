@@ -385,7 +385,7 @@ function create_building_outline_path(cell_info) {
     }
 
     // simplify the grid path by removing duplicate points and points on the same line
-    grid_shape_path = simplify_path(grid_shape_path, true, 0.001);
+    grid_shape_path = simplify_path(grid_shape_path, true, 0.0005);
 
     // running twice seems to help? TODO: not a perfect solution, and may introduce more bugs...
     grid_shape_path = elimate_self_intersections(grid_shape_path);
@@ -642,10 +642,10 @@ function find_building_centers_and_adjacent_walls(cell_info) {
         // try to use polylabel to find decent center point
         try {
             let poly_center = polylabel([connection_mod.outline_path.map(coord => [coord.x, coord.y])]);        
-            center= {x: poly_center[0], y: poly_center[1]};
+            center = {x: poly_center[0], y: poly_center[1]};
         } catch(e) {
-            console.log(e);
-            console.log("failed cell_info: ", cell_info);
+            // console.log(e);
+            console.log("failed to find polylabel center, cell_info: ", cell_info);
             console.log("center attempt for path: ", [connection_mod.outline_path.map(coord => [coord.x, coord.y])]);
 
             // backup is to average points to get the center
@@ -1218,6 +1218,10 @@ function find_door_orientation(cell_info, door_id) {
 
     let attached_wall_index = door_mod.attached_wall_outline_index;
     let wall = building_mods.outline_grid_walls[attached_wall_index];
+
+    if (wall == null) {
+        return;
+    }
 
     let wall_direction = calc_line_orthogonal_direction(wall[0], wall[1], 0.001);
     let door_orientation = null;

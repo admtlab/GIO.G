@@ -149,6 +149,9 @@ function process_building(building, cell_info_override=null, skip_outline_calc=f
         // update_deep_doors(building || cell_info.building_data);
 
         create_building_outline_path(cell_info);
+        
+        // remove connected buildings with no entrances
+        remove_empty_connections(cell_info);
     }
 
     // calculate effective walls to prevent doors in corners
@@ -157,21 +160,17 @@ function process_building(building, cell_info_override=null, skip_outline_calc=f
     // update door positions to respect effective walls
     update_doors_to_effective_walls(cell_info);
 
-    // TODO: not working properly
-    // remove connected buildings with no entrances
-    // remove_empty_connections(cell_info);
-
     // make building available at connected cell coordinates
     setup_connected_grid_cell_info(cell_info);
 
     // find the bounding rectangle around the building outline shape
     find_building_bounding_rectangle(cell_info);
 
-    // find building center point (considering the entire building)
-    find_building_center(cell_info);
+    // // find building center point (considering the entire building)
+    // find_building_center(cell_info);
 
     // find building centers and adjacent walls of all connected buildings
-    find_building_centers_and_adjacent_walls(cell_info);
+    // find_building_centers_and_adjacent_walls(cell_info);
 
     // find orientation of doors
     find_all_doors_orientations(cell_info);
@@ -688,7 +687,8 @@ function remove_empty_connections(cell_info) {
     // get list of all connected building ids
     let all_connected_ids = [
         ...cell_info.building_mods.connected_building_coords.map(coords => grid_coords_to_building_id(grid_coords_for_building_or_door(coords))),
-        cell_info.building_data.id];
+        cell_info.building_data.id
+    ];
     let connected_has_door = {};
     all_connected_ids.forEach(id => {
         connected_has_door[id] = false;
@@ -710,6 +710,14 @@ function remove_empty_connections(cell_info) {
         connected_has_door[building_id] = true;
     }
 
+    // iterate over ever point on the grid path and find the building cell that contains it
+    // for (let point of cell_info.building_mods.outline_grid_path) {
+    //     let building_grid_coords = estimate_building_grid_coords(point);
+    //     let building_id = grid_coords_to_building_id(building_grid_coords);
+    //     connected_has_door[building_id] = true;
+    //     // console.log(building_id, cell_info.building_data.id, point, building_grid_coords)
+    // }
+
     // find indexes of any building that did not contain a door
     let indexes_to_remove = [];
     for (let i = 0; i < all_connected_ids.length; i++) {
@@ -722,18 +730,65 @@ function remove_empty_connections(cell_info) {
     indexes_to_remove.sort((a, b) => b - a);
 
     if (indexes_to_remove.length > 0) {
+        console.log("removing faulty cells from building: ", cell_info);
         console.log("removing indexes: ", indexes_to_remove);
         console.log("all connected ids: ", all_connected_ids);
-        console.log("has door: ", connected_has_door);
+        console.log("cells with doors: ", connected_has_door);
     }
 
     // remove the indexes from the building data
     for (let i = 0; i < indexes_to_remove.length; i++) {
         let index = indexes_to_remove[i];
 
-        cell_info.building_data.merged_x.splice(index, 1);
-        cell_info.building_data.merged_y.splice(index, 1);
-        cell_info.building_mods.connected_building_coords.splice(index, 1);
+        if (cell_info.building_data.merged_x) {
+            cell_info.building_data.merged_x.splice(index, 1);
+        }
+        if (cell_info.building_data.merged_y) {
+            cell_info.building_data.merged_y.splice(index, 1);
+        }
+        if (cell_info.building_mods.connected_building_coords) {
+            cell_info.building_mods.connected_building_coords.splice(index, 1);
+        }
+    }
+
+    // check if all cells have been removed
+    if (indexes_to_remove.length === all_connected_ids.length) {
+        console.log("all cells have no points, removing building entirely: ", cell_info);
+        let building_grid_coords = grid_coords_for_building_or_door(cell_info.building_data);
+        grid[building_grid_coords.y][building_grid_coords.x] = new_empty_grid_cell();
+        current_graph.splice(current_graph.indexOf(cell_info.building_data), 1);
+        return;
+    }
+
+    // check if the main cell has been removed
+    let did_remove_main_id = false;
+    for (let index of indexes_to_remove) {
+        if (all_connected_ids[index] == cell_info.building_data.id) {
+            did_remove_main_id = true;
+            break;
+        }
+    }
+    
+    if (did_remove_main_id) {
+
+        // find a still existing cell id
+        let non_main_id = null;
+        for (let i = 0; i < all_connected_ids.length; i++) {
+            if (indexes_to_remove.indexOf(i) === -1) {
+                non_main_id = all_connected_ids[i];
+            }
+        }
+    
+        // change the id to an existing building if it is found
+        if (non_main_id !== null) {
+            console.log("changing id of building: ", cell_info.building_data.id, "to", non_main_id)
+            let grid_coords = grid_coords_for_building_id(cell_info.building_data.id);
+            let temp_grid_coords = grid_coords_for_building_id(non_main_id);
+            let temp_cell_info = grid_object_at_coords(temp_grid_coords);
+            grid[temp_grid_coords.y][temp_grid_coords.x] = cell_info;
+            grid[grid_coords.y][grid_coords.x] = temp_cell_info;
+            cell_info.building_data.id = non_main_id;
+        }
     }
 }
 

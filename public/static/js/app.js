@@ -193,6 +193,10 @@ let year_text = new Date().getFullYear();
 let about_page_visible = false;
 let about_page_multi_select_enabled = false;
 
+// store active api request status
+let api_gen_graph_active = false;
+let api_path_rec_active = false;
+
 /* -------------------------------------------------------------------------- */
 /*                            main event listeners                            */
 /* -------------------------------------------------------------------------- */

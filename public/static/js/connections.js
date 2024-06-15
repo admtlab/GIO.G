@@ -12,8 +12,15 @@ async function generate_graph(config) {
 
     console.log("generating graph with config: ", config);
 
-    // start the graph generator spinner
+    if (api_gen_graph_active) {
+        return;
+    }
+
+    // set active status
+    api_gen_graph_active = true;
     set_graph_gen_spinner_enabled(true);
+    let submit_button = document.getElementById("graph-gen-submit-button");
+    update_toggle_button_active(submit_button, false);
 
     // send request to generate a new graph
     fetch("http://localhost:9000/new_graph", {
@@ -33,24 +40,43 @@ async function generate_graph(config) {
         console.log("graph data: ", json);
         process_generated_graph(json, config);
 
-        // disable the graph generator spinner
+        // reset active state
+        api_gen_graph_active = false;
         set_graph_gen_spinner_enabled(false);
+        update_toggle_button_active(submit_button, true);
     })
-    .catch((e) => console.error(e));
+    .catch((e) => {
+        console.error(e);
+
+        // reset active state
+        api_gen_graph_active = false;
+        set_graph_gen_spinner_enabled(false);
+        update_toggle_button_active(submit_button, true);
+        document.getElementById("graph-gen-error-text").innerHTML = "ERROR: internal error";
+        update_accordion_heights();
+    });
 }
 
 // contact the path recommender with the given options
 async function recommend_paths(path_configs) {
 
+    if (api_path_rec_active) {
+        return;
+    }
+
     // get a filtered version of the graph
     let filtered_graph = filter_current_graph(false, false);
-
+    
     console.log("recommending paths with options: ", path_configs);
     console.log("filtered graph: ", filtered_graph);
-
-    // start the path recommender spinner
+    
+    // set active status
+    api_path_rec_active = true;
     set_path_gen_spinner_enabled(true);
 
+    let submit_button = document.getElementById("path-gen-submit-button");
+    update_toggle_button_active(submit_button, false);
+    
     let test_enabled = false;
     if (test_enabled) {
 
@@ -129,10 +155,21 @@ async function recommend_paths(path_configs) {
         }
         process_paths(alg_results);
 
-        // disable the path recommender spinner
+        // reset active state
+        api_path_rec_active = false;
         set_path_gen_spinner_enabled(false);
+        update_toggle_button_active(submit_button, true);
         
-    }).catch(err => console.log(err));
+    }).catch(err => {
+        console.log(err);
+
+        // reset active state
+        api_path_rec_active = false;
+        set_path_gen_spinner_enabled(false);
+        update_toggle_button_active(submit_button, true);
+        document.getElementById("path-gen-error-text").innerHTML = "ERROR: internal error";
+        update_accordion_heights();
+    });
 }
 
 
