@@ -503,7 +503,6 @@ class CorridorGraph {
         // find the closest mst node to the given point
         for (let node of this.min_span_nodes) {
 
-            console.log(node.point, point)
             let dist = calc_dist(node.point, point);
 
             if (dist < best_dist) {

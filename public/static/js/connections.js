@@ -10,17 +10,31 @@
 // contact the graph generator with the given config
 async function generate_graph(config) {
 
-    console.log("generating graph with config: ", config);
-
+    // cancel existing requests
     if (api_gen_graph_active) {
+        if (api_gen_graph_abort_controller !== null) {
+            api_gen_graph_abort_controller.abort();
+        }
+        console.log("stopping active graph generation request");
         return;
+    } else if (api_path_rec_active) {
+        if (api_path_rec_abort_controller !== null) {
+            api_path_rec_abort_controller.abort();
+        }
+        console.log("stopping active path recommendation request");
     }
+
+    console.log("generating graph with config: ", config);
 
     // set active status
     api_gen_graph_active = true;
     set_graph_gen_spinner_enabled(true);
     let submit_button = document.getElementById("graph-gen-submit-button");
     update_toggle_button_active(submit_button, false);
+
+    // set new abort controller and timeout
+    api_gen_graph_abort_controller = new AbortController();
+    const timeout_id = setTimeout(() => api_gen_graph_abort_controller.abort(), api_request_timeout);
 
     // send request to generate a new graph
     fetch("http://localhost:9000/new_graph", {
@@ -30,13 +44,19 @@ async function generate_graph(config) {
           'Accept': 'application/json, text/plain, */*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(config)})
+        body: JSON.stringify(config),
+        signal: api_gen_graph_abort_controller.signal
+    })
     
     // get json response data
-    .then((res) => res.json())
+    .then((res) => {
+        clearTimeout(timeout_id);
+        return res.json();
+    })
 
     // process the graph and draw it
     .then((json) => {
+        
         console.log("graph data: ", json);
         process_generated_graph(json, config);
 
@@ -45,14 +65,17 @@ async function generate_graph(config) {
         set_graph_gen_spinner_enabled(false);
         update_toggle_button_active(submit_button, true);
     })
-    .catch((e) => {
-        console.error(e);
+    .catch((err) => {
+        console.error(err);
 
         // reset active state
         api_gen_graph_active = false;
         set_graph_gen_spinner_enabled(false);
         update_toggle_button_active(submit_button, true);
-        document.getElementById("graph-gen-error-text").innerHTML = "ERROR: internal error";
+
+        let error_text = err.name === "AbortError" ? "ERROR: request cancelled" : "ERROR: interal error";
+        document.getElementById("graph-gen-error-text").innerHTML = error_text;
+
         update_accordion_heights();
     });
 }
@@ -60,8 +83,18 @@ async function generate_graph(config) {
 // contact the path recommender with the given options
 async function recommend_paths(path_configs) {
 
+    // cancel existing requests
     if (api_path_rec_active) {
+        if (api_path_rec_abort_controller !== null) {
+            api_path_rec_abort_controller.abort();
+        }
+        console.log("stopping active path recommendation request");
         return;
+    } else if (api_gen_graph_active) {
+        if (api_gen_graph_abort_controller !== null) {
+            api_gen_graph_abort_controller.abort();
+        }
+        console.log("stopping active graph generation request");
     }
 
     // get a filtered version of the graph
@@ -73,6 +106,10 @@ async function recommend_paths(path_configs) {
     // set active status
     api_path_rec_active = true;
     set_path_gen_spinner_enabled(true);
+
+    // set new abort controller and timeout
+    api_path_rec_abort_controller = new AbortController();
+    const timeout_id = setTimeout(() => api_path_rec_abort_controller.abort(), api_request_timeout);
 
     let submit_button = document.getElementById("path-gen-submit-button");
     update_toggle_button_active(submit_button, false);
@@ -115,7 +152,9 @@ async function recommend_paths(path_configs) {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(filtered_graph)})
+        body: JSON.stringify(filtered_graph),
+        signal: api_path_rec_abort_controller.signal
+    })
 
     // check response for graph update
     .then((res) => {
@@ -134,7 +173,9 @@ async function recommend_paths(path_configs) {
                     'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(path_config)})
+                body: JSON.stringify(path_config),
+                signal: api_path_rec_abort_controller.signal
+            })
         ));
 
     // get json objects from responses
@@ -143,6 +184,8 @@ async function recommend_paths(path_configs) {
 
     // process and draw the paths
     ).then((jsons) => {
+
+        clearTimeout(timeout_id);
 
         // associate each returned stats and path with the algorithm name
         let alg_results = {};
@@ -167,7 +210,10 @@ async function recommend_paths(path_configs) {
         api_path_rec_active = false;
         set_path_gen_spinner_enabled(false);
         update_toggle_button_active(submit_button, true);
-        document.getElementById("path-gen-error-text").innerHTML = "ERROR: internal error";
+
+        let error_text = err.name === "AbortError" ? "ERROR: request cancelled" : "ERROR: interal error";
+        document.getElementById("path-gen-error-text").innerHTML = error_text;
+
         update_accordion_heights();
     });
 }

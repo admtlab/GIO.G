@@ -196,6 +196,9 @@ let about_page_multi_select_enabled = false;
 // store active api request status
 let api_gen_graph_active = false;
 let api_path_rec_active = false;
+let api_gen_graph_abort_controller = null;
+let api_path_rec_abort_controller = null;
+let api_request_timeout = 20000;
 
 /* -------------------------------------------------------------------------- */
 /*                            main event listeners                            */

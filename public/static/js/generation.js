@@ -239,7 +239,9 @@ function delete_building(cell_info) {
 
     // remove the building from the graph data
     let building_index = current_graph.indexOf(building);
-    current_graph.splice(building_index, 1);
+    if (building_index > -1) {
+        current_graph.splice(building_index, 1);
+    }
 
     // reset the building cell for any connected buildings
     let connected_buildings = cell_info.building_mods.connected_building_coords;
@@ -247,6 +249,16 @@ function delete_building(cell_info) {
         for (let i = 0; i < connected_buildings.length; i++) {
             let connected_coords = grid_coords_for_building_or_door(connected_buildings[i]);
             grid[connected_coords.y][connected_coords.x] = new_empty_grid_cell();
+        }
+    } else {
+        let merged_x = cell_info.building_data.merged_x;
+        let merged_y = cell_info.building_data.merged_y; 
+
+        if (merged_x != null && merged_y != null && merged_x.length === merged_y.length) {
+
+            for (let i = 0; i < merged_x.length; i++) {
+                grid[merged_y[i]-1][merged_x[i]-1] = new_empty_grid_cell();
+            }
         }
     }
 

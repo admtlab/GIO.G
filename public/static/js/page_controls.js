@@ -188,7 +188,7 @@ function update_graph_gen_form_display() {
 
 
 // attempt to submit the configuration form
-function submit_graph_gen_form() {
+async function submit_graph_gen_form() {
 
     // get the input elements
     let num_buildings_input = document.getElementById("num-buildings-input");
@@ -317,7 +317,7 @@ function set_graph_gen_spinner_enabled(enabled) {
 
 
 // attempt to submit the path generation form
-function submit_path_gen_form() {
+async function submit_path_gen_form() {
 
     let path_gen_form = document.getElementById("path-gen-form-container");
     let alg_chkboxes = path_gen_form.querySelectorAll("input[type=checkbox]");

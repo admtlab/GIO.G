@@ -1173,28 +1173,52 @@ function draw_endpoint_to_endpoint_path_part(start_point_grid_coords, end_point_
     let end_point_building_id = grid_coords_to_building_id(end_point_building_grid_coords);
     let end_point_cell_info = grid_object_at_coords(end_point_building_grid_coords);
 
-    // get to border results for the endpoints
-    let start_point_to_border_results = null;
-    let end_point_to_border_results = null
+    if (start_point_location_status === 0) {
+        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(start_point_building_grid_coords);
+        start_point_building_id = grid_coords_to_building_id(grid_border_grid_coords);
+    }
+
+    if (end_point_location_status === 0) {
+        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(end_point_building_grid_coords);
+        end_point_building_id = grid_coords_to_building_id(grid_border_grid_coords);
+    }
+
+    let external_grid_path = [];
+
+    // both points are outside the grid
+    if (start_point_location_status === 0 && end_point_location_status === 0) {
+        external_grid_path = [start_point_grid_coords, end_point_grid_coords];
 
     // both points are inside the same building
-    // if (start_point_location_status === 2 && end_point_location_status === 2 && start_point_cell_info === end_point_cell_info) {
-
-    // } else {
-        start_point_to_border_results = border_results_for_end_point(start_point_grid_coords, end_point_grid_coords, path_type);
-        end_point_to_border_results = border_results_for_end_point(end_point_grid_coords, start_point_grid_coords, path_type);
-    // }
-    
-    // find the path that connects the border walls for each cell
-    let connected_wall_grid_path = connect_building_cell_walls_grid_path(start_point_building_id, start_point_to_border_results.wall_dir, 
-        end_point_building_id, end_point_to_border_results.wall_dir, end_point_to_border_results.path[1], path_grid_offset);
+    } else if (start_point_location_status === 2 && end_point_location_status === 2 && start_point_cell_info === end_point_cell_info) {
         
-    // remove first and last point to allow walls to end at cutoff points
-    connected_wall_grid_path.shift();
-    connected_wall_grid_path.pop();
+        // use the corridor graph to find a path between temporary nodes
+        let corridor_graph = end_point_cell_info.building_mods.corridor_graph;
+        let temp_node_start = corridor_graph.add_temp_node_mst(start_point_grid_coords);
+        let temp_node_end = corridor_graph.add_temp_node_mst(end_point_grid_coords);
+        let path = corridor_graph.find_path(temp_node_start, temp_node_end, true);
+        corridor_graph.remove_temp_mst_nodes();
 
-    // construct grid path and convert to stage coords
-    let external_grid_path = [start_point_grid_coords, ...start_point_to_border_results.path, ...connected_wall_grid_path, ...end_point_to_border_results.path.toReversed(), end_point_grid_coords];
+        external_grid_path = path;
+
+    } else {
+
+        // get to border results for the endpoints
+        let start_point_to_border_results = border_results_for_end_point(start_point_grid_coords, end_point_grid_coords, path_type);
+        let end_point_to_border_results = border_results_for_end_point(end_point_grid_coords, start_point_grid_coords, path_type);
+
+        // find the path that connects the border walls for each cell
+        let connected_wall_grid_path = connect_building_cell_walls_grid_path(start_point_building_id, start_point_to_border_results.wall_dir, 
+            end_point_building_id, end_point_to_border_results.wall_dir, end_point_to_border_results.path[1], path_grid_offset);
+            
+        // remove first and last point to allow walls to end at cutoff points
+        connected_wall_grid_path.shift();
+        connected_wall_grid_path.pop();
+
+        // construct grid path and convert to stage coords
+        external_grid_path = [start_point_grid_coords, ...start_point_to_border_results.path, ...connected_wall_grid_path, ...end_point_to_border_results.path.toReversed(), end_point_grid_coords];
+    }
+    
     let external_stage_path = external_grid_path.map((grid_coords) => door_grid_coords_to_main_stage_coords(grid_coords, null, true));
 
     // create the shape for the external path
@@ -1234,6 +1258,11 @@ function draw_endpoint_path_part(endpoint_door_grid_coords, cell_info, door_id, 
     let endpoint_location_status = get_endpoint_location_status(endpoint_door_grid_coords);
     let endpoint_building_grid_coords = estimate_building_grid_coords(endpoint_door_grid_coords);
     let endpoint_building_id = grid_coords_to_building_id(endpoint_building_grid_coords);
+
+    if (endpoint_location_status === 0) {
+        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(endpoint_building_grid_coords);
+        endpoint_building_id = grid_coords_to_building_id(grid_border_grid_coords);
+    }
     
     // get the path from door and endpoint to cell border
     let door_to_border_results = door_grid_path_to_border(cell_info, door_id, path_grid_offset, door_grid_offset);
