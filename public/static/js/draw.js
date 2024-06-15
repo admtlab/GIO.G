@@ -1152,9 +1152,6 @@ function draw_point_selection(door_grid_coords, parent, is_start) {
 // draw path directly between endpoint and endpoint
 function draw_endpoint_to_endpoint_path_part(start_point_grid_coords, end_point_grid_coords, parent, path_type) {
     
-    // TODO: could probably combine this with the other endpoint drawing method, lots of duplicated code...
-    // honestly you should just separate the endpoint to border based on location out to another method, that's the big part
-
     let cell_dims = get_cell_dims(true);
     let door_dims = get_door_dims(true);
 
@@ -1169,103 +1166,25 @@ function draw_endpoint_to_endpoint_path_part(start_point_grid_coords, end_point_
     let start_point_location_status = get_endpoint_location_status(start_point_grid_coords);
     let start_point_building_grid_coords = estimate_building_grid_coords(start_point_grid_coords);
     let start_point_building_id = grid_coords_to_building_id(start_point_building_grid_coords);
+    let start_point_cell_info = grid_object_at_coords(start_point_building_grid_coords);
 
     let end_point_location_status = get_endpoint_location_status(end_point_grid_coords);
     let end_point_building_grid_coords = estimate_building_grid_coords(end_point_grid_coords);
     let end_point_building_id = grid_coords_to_building_id(end_point_building_grid_coords);
+    let end_point_cell_info = grid_object_at_coords(end_point_building_grid_coords);
 
     // get to border results for the endpoints
     let start_point_to_border_results = null;
     let end_point_to_border_results = null
+
+    // both points are inside the same building
+    // if (start_point_location_status === 2 && end_point_location_status === 2 && start_point_cell_info === end_point_cell_info) {
+
+    // } else {
+        start_point_to_border_results = border_results_for_end_point(start_point_grid_coords, end_point_grid_coords, path_type);
+        end_point_to_border_results = border_results_for_end_point(end_point_grid_coords, start_point_grid_coords, path_type);
+    // }
     
-    // start point is outside grid
-    if (start_point_location_status === 0) {
-        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(start_point_building_grid_coords);
-        start_point_building_id = grid_coords_to_building_id(grid_border_grid_coords);
-        start_point_to_border_results = endpoint_grid_path_to_border(grid_border_grid_coords, start_point_grid_coords, 
-            path_grid_offset, door_grid_offset);
-    
-    // start point is inside grid, outside building
-    } else if (start_point_location_status === 1) {
-        start_point_to_border_results = endpoint_grid_path_to_border(start_point_building_grid_coords, start_point_grid_coords, 
-            path_grid_offset, door_grid_offset, end_point_building_grid_coords);
-    
-    // start point is inside building
-    } else if (start_point_location_status === 2) {
-
-        // TODO: need to properly connect endpoint to door point, since currently it is just a straight line
-
-        let start_point_cell_info = grid_object_for_id(start_point_building_id);
-
-        let best_dist = Number.MAX_SAFE_INTEGER;
-        let best_door = null;
-
-        // find closest door to target 
-        for (let i = 0; i < start_point_cell_info.building_data.entrances.length; i++) {
-            let start_point_door = start_point_cell_info.building_data.entrances[i];
-            let start_point_door_grid_coords = grid_coords_for_building_or_door(start_point_door);
-
-            let dist = calc_dist(start_point_door_grid_coords, end_point_building_grid_coords);
-
-            if (dist < best_dist) {
-                best_dist = dist;
-                best_door = start_point_door;
-            }
-        }
-
-        // check if a best door was found
-        if (best_door !== null) {
-            start_point_to_border_results = door_grid_path_to_border(start_point_cell_info, best_door.id, path_grid_offset, door_grid_offset);
-        } else {
-            start_point_to_border_results = endpoint_grid_path_to_border(start_point_building_grid_coords, start_point_door_grid_coords, 
-                path_grid_offset, door_grid_offset, end_point_building_grid_coords);
-        }
-    }
-
-    // end point is outside grid
-    if (end_point_location_status === 0) {
-        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(end_point_building_grid_coords);
-        end_point_building_id = grid_coords_to_building_id(grid_border_grid_coords);
-        end_point_to_border_results = endpoint_grid_path_to_border(grid_border_grid_coords, end_point_grid_coords, 
-            path_grid_offset, door_grid_offset);
-    
-    // end point is inside grid, outside building
-    } else if (end_point_location_status === 1) {
-        end_point_to_border_results = endpoint_grid_path_to_border(end_point_building_grid_coords, end_point_grid_coords, 
-            path_grid_offset, door_grid_offset, end_point_building_grid_coords);
-    
-    // end point is inside building
-    } else if (end_point_location_status === 2) {
-
-        // TODO: need to properly connect endpoint to door point, since currently it is just a straight line
-
-        let end_point_cell_info = grid_object_for_id(end_point_building_id);
-
-        let best_dist = Number.MAX_SAFE_INTEGER;
-        let best_door = null;
-
-        // find closest door to target 
-        for (let i = 0; i < end_point_cell_info.building_data.entrances.length; i++) {
-            let end_point_door = end_point_cell_info.building_data.entrances[i];
-            let end_point_door_grid_coords = grid_coords_for_building_or_door(end_point_door);
-
-            let dist = calc_dist(end_point_door_grid_coords, start_point_building_grid_coords);
-
-            if (dist < best_dist) {
-                best_dist = dist;
-                best_door = end_point_door;
-            }
-        }
-
-        // check if a best door was found
-        if (best_door !== null) {
-            end_point_to_border_results = door_grid_path_to_border(end_point_cell_info, best_door.id, path_grid_offset, door_grid_offset);
-        } else {
-            end_point_to_border_results = endpoint_grid_path_to_border(end_point_building_grid_coords, end_point_door_grid_coords, 
-                path_grid_offset, door_grid_offset, start_point_building_grid_coords);
-        }
-    }
-
     // find the path that connects the border walls for each cell
     let connected_wall_grid_path = connect_building_cell_walls_grid_path(start_point_building_id, start_point_to_border_results.wall_dir, 
         end_point_building_id, end_point_to_border_results.wall_dir, end_point_to_border_results.path[1], path_grid_offset);
@@ -1318,55 +1237,11 @@ function draw_endpoint_path_part(endpoint_door_grid_coords, cell_info, door_id, 
     
     // get the path from door and endpoint to cell border
     let door_to_border_results = door_grid_path_to_border(cell_info, door_id, path_grid_offset, door_grid_offset);
-    let endpoint_to_border_results = null;
+    let endpoint_to_border_results = border_results_for_end_point(endpoint_door_grid_coords, door_to_border_results.path[1], path_type);
     
     // get target building and door information
     let target_door_grid_coords = grid_coords_for_building_or_door(cell_info.building_mods.entrance_mods[door_id].data_ref);
     let target_building_id = grid_coords_to_building_id(estimate_building_grid_coords(door_to_border_results.path[0]));
-
-    // endpoint is outside grid
-    if (endpoint_location_status === 0) {
-        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(endpoint_building_grid_coords);
-        endpoint_building_id = grid_coords_to_building_id(grid_border_grid_coords);
-        endpoint_to_border_results = endpoint_grid_path_to_border(grid_border_grid_coords, endpoint_door_grid_coords, 
-            path_grid_offset, door_grid_offset);
-    
-    // endpoint is inside grid, outside building
-    } else if (endpoint_location_status === 1) {
-        endpoint_to_border_results = endpoint_grid_path_to_border(endpoint_building_grid_coords, endpoint_door_grid_coords, 
-            path_grid_offset, door_grid_offset, door_to_border_results.path[1]);
-    
-    // endpoint is inside building
-    } else if (endpoint_location_status === 2) {
-
-        // TODO: need to properly connect endpoint to door point, since currently it is just a straight line
-
-        let endpoint_cell_info = grid_object_for_id(endpoint_building_id);
-
-        let best_dist = Number.MAX_SAFE_INTEGER;
-        let best_door = null;
-
-        // find closest door to target 
-        for (let i = 0; i < endpoint_cell_info.building_data.entrances.length; i++) {
-            let endpoint_door = endpoint_cell_info.building_data.entrances[i];
-            let endpoint_door_grid_coords = grid_coords_for_building_or_door(endpoint_door);
-
-            let dist = calc_dist(endpoint_door_grid_coords, door_to_border_results.path[1]);
-
-            if (dist < best_dist) {
-                best_dist = dist;
-                best_door = endpoint_door;
-            }
-        }
-
-        // check if a best door was found
-        if (best_door !== null) {
-            endpoint_to_border_results = door_grid_path_to_border(endpoint_cell_info, best_door.id, path_grid_offset, door_grid_offset);
-        } else {
-            endpoint_to_border_results = endpoint_grid_path_to_border(endpoint_building_grid_coords, endpoint_door_grid_coords, 
-                path_grid_offset, door_grid_offset, door_to_border_results.path[1]);
-        }
-    }
 
     // find the path that connects the border walls for each cell
     let connected_wall_grid_path = connect_building_cell_walls_grid_path(endpoint_building_id, endpoint_to_border_results.wall_dir, 

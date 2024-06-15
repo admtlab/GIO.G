@@ -1199,6 +1199,84 @@ function get_endpoint_location_status(endpoint_door_grid_coords) {
 }
 
 
+// get the border results (path to border) for a given end point
+function border_results_for_end_point(end_point_grid_coords, path_target_coords, path_type) {
+
+    let cell_dims = get_cell_dims(true);
+    let door_dims = get_door_dims(true);
+
+    // get path drawing options 
+    let path_options = path_type_options[path_type];
+    let path_color = show_path_type_color ? path_options.color : "red";
+    let path_width = door_dims.size / 5;
+    let path_grid_offset = path_options.exterior_offset * (path_width / cell_dims.size * 1.25);
+    let door_grid_offset = (path_options.exterior_offset - 3) * (path_width / cell_dims.size);
+
+    let end_point_location_status = get_endpoint_location_status(end_point_grid_coords);
+    let end_point_building_grid_coords = estimate_building_grid_coords(end_point_grid_coords);
+    let end_point_building_id = grid_coords_to_building_id(end_point_building_grid_coords);
+    let end_point_cell_info = grid_object_at_coords(end_point_building_grid_coords);
+    
+    let end_point_to_border_results = null;
+
+    // end point is outside grid
+    if (end_point_location_status === 0) {
+        let grid_border_grid_coords = closest_cell_coords_for_out_of_bounds(end_point_building_grid_coords);
+        end_point_building_id = grid_coords_to_building_id(grid_border_grid_coords);
+        end_point_to_border_results = endpoint_grid_path_to_border(grid_border_grid_coords, end_point_grid_coords, 
+            path_grid_offset, door_grid_offset);
+
+    // end point is inside grid, outside building
+    } else if (end_point_location_status === 1) {
+        end_point_to_border_results = endpoint_grid_path_to_border(end_point_building_grid_coords, end_point_grid_coords, 
+            path_grid_offset, door_grid_offset, path_target_coords);
+
+    // end point is inside building
+    } else if (end_point_location_status === 2) {
+
+        // TODO: need to properly connect endpoint to door point, since currently it is just a straight line
+
+        let best_dist = Number.MAX_SAFE_INTEGER;
+        let best_door = null;
+
+        // find closest door to target 
+        for (let i = 0; i < end_point_cell_info.building_data.entrances.length; i++) {
+            let end_point_door = end_point_cell_info.building_data.entrances[i];
+            let end_point_door_grid_coords = grid_coords_for_building_or_door(end_point_door);
+
+            let dist = calc_dist(end_point_door_grid_coords, path_target_coords);
+
+            if (dist < best_dist) {
+                best_dist = dist;
+                best_door = end_point_door;
+            }
+        }
+
+        // check if a best door was found
+        if (best_door !== null) {
+            end_point_to_border_results = door_grid_path_to_border(end_point_cell_info, best_door.id, path_grid_offset, door_grid_offset);
+
+            // use the corridor graph to find a path to the chosen door
+            let corridor_graph = end_point_cell_info.building_mods.corridor_graph;
+            let temp_node = corridor_graph.add_temp_node_mst(end_point_grid_coords);
+            let door_node = corridor_graph.node_with_door_id(best_door.id);
+            let path = corridor_graph.find_path(temp_node, door_node, true);
+            path.splice(0, 1);
+            corridor_graph.remove_temp_mst_nodes();
+
+            let corner = calc_corner_between_points(end_point_grid_coords, path[0], true);
+            end_point_to_border_results.path = [corner, ...path, ...end_point_to_border_results.path];
+
+        } else {
+            end_point_to_border_results = endpoint_grid_path_to_border(end_point_building_grid_coords, end_point_door_grid_coords, 
+                path_grid_offset, door_grid_offset, path_target_coords);
+        }
+    }
+
+    return end_point_to_border_results;
+}
+
+
 // find orientation of doors
 function find_all_doors_orientations(cell_info) {
 

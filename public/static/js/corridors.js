@@ -102,7 +102,7 @@ class CorridorGraph {
     }
 
     // creates a new node for a given point
-    create_node(point, door_id=-1, on_edges=[]) {
+    create_node(point, door_id=-1, on_edges=[], temporary=false) {
         let node = {
             point: point,
             door_id: door_id,
@@ -114,10 +114,13 @@ class CorridorGraph {
             neighbors: [],
             mst_weight: Number.MAX_SAFE_INTEGER,
             mst_children: [],
-            mst_parent: null
+            mst_parent: null,
+            temporary: temporary
         };
         this.nodes.push(node);
         on_edges.forEach((edge) => edge.nodes.push(node));
+
+        return node;
     }
 
     // sets the neighbors of nodes in each edge
@@ -487,6 +490,51 @@ class CorridorGraph {
 
         // return coordinates of nodes in a path
         return this.find_path(start_node, end_node, true);
+    }
+
+    // adds a temporary node to the spanning tree
+    add_temp_node_mst(point) {
+
+        let new_node = this.create_node(point, -1, [], true);
+        
+        let best_node = null;
+        let best_dist = Number.MAX_SAFE_INTEGER;
+
+        // find the closest mst node to the given point
+        for (let node of this.min_span_nodes) {
+
+            console.log(node.point, point)
+            let dist = calc_dist(node.point, point);
+
+            if (dist < best_dist) {
+                best_dist = dist;
+                best_node = node;
+            }
+        }
+
+        if (best_node === null) {
+            return null;
+        }
+
+        new_node.mst_parent = best_node;
+        best_node.mst_children.push(new_node);
+        this.min_span_nodes.push(new_node);
+
+        return new_node;
+    }
+
+    // remove any temporary nodes
+    remove_temp_mst_nodes() {
+
+        let indexes_to_remove = [];
+        for (let i = 0; i < this.min_span_nodes.length; i++) {
+            let node = this.min_span_nodes[i];
+            if (node.temporary) {
+                indexes_to_remove.push(i);
+            }
+        }
+
+        this.remove_min_span_nodes(indexes_to_remove);
     }
 
     // get arbitrary node that has a door
