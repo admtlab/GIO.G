@@ -753,7 +753,7 @@ function draw_corridors(cell_info, parent, for_main_stage) {
             let circle = new Konva.Circle({
                 x: stage_coords.x,
                 y: stage_coords.y,
-                radius: 4,
+                radius: 3,
                 fill: "yellow"
             });
             corridors_group.add(circle);
@@ -765,7 +765,7 @@ function draw_corridors(cell_info, parent, for_main_stage) {
             let circle = new Konva.Circle({
                 x: stage_coords.x,
                 y: stage_coords.y,
-                radius: 3,
+                radius: 2,
                 fill: "red"
             });
             corridors_group.add(circle);

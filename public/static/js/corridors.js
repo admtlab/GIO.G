@@ -189,10 +189,10 @@ class CorridorGraph {
         this.set_node_neighbors();
 
         // prune marked nodes
-        this.prune_marked_nodes_pre_mst()
+        this.prune_marked_nodes_pre_mst();
 
         // prune nodes near walls 
-        this.prune_near_walls_pre_mst(door_len_ratio);
+        // this.prune_near_walls_pre_mst(door_len_ratio);
 
         this.min_span_nodes = [];
 
@@ -285,24 +285,24 @@ class CorridorGraph {
         }
 
         // set the node's neighbors if necessary
-        // if (target_node.up !== null) {
-        //     target_node.up.down = target_node.down;
-        //     target_node.up.neighbors.splice(target_node.up.neighbors.indexOf(target_node), 1);
-        // }
-        // if (target_node.down !== null) {
-        //     target_node.down.up = target_node.up;
-        //     target_node.down.neighbors.splice(target_node.down.neighbors.indexOf(target_node), 1);
-        // }
-        // if (target_node.left !== null) {
-        //     target_node.left.right = target_node.right;
-        //     target_node.left.neighbors.splice(target_node.left.neighbors.indexOf(target_node), 1);
-        // }
-        // if (target_node.right !== null) {
-        //     target_node.right.left = target_node.left;
-        //     target_node.right.neighbors.splice(target_node.right.neighbors.indexOf(target_node), 1);
-        // }
-        // TODO: manually changing neighbors does not work properly so temporarily just resetting all neighbors
-        this.set_node_neighbors();
+        if (target_node.up !== null) {
+            target_node.up.down = target_node.down;
+            target_node.up.neighbors.splice(target_node.up.neighbors.indexOf(target_node), 1);
+        }
+        if (target_node.down !== null) {
+            target_node.down.up = target_node.up;
+            target_node.down.neighbors.splice(target_node.down.neighbors.indexOf(target_node), 1);
+        }
+        if (target_node.left !== null) {
+            target_node.left.right = target_node.right;
+            target_node.left.neighbors.splice(target_node.left.neighbors.indexOf(target_node), 1);
+        }
+        if (target_node.right !== null) {
+            target_node.right.left = target_node.left;
+            target_node.right.neighbors.splice(target_node.right.neighbors.indexOf(target_node), 1);
+        }
+        // // TODO: manually changing neighbors does not work properly so temporarily just resetting all neighbors
+        // this.set_node_neighbors();
     }
 
     // prune spanning endpoints that do not lead to doors
@@ -403,7 +403,7 @@ class CorridorGraph {
         }
 
         // reset the neighbors of remaining nodes
-        this.set_node_neighbors();
+        // this.set_node_neighbors();
     }
 
     // find path from one node to another node
