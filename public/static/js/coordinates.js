@@ -688,6 +688,8 @@ function connect_building_cell_walls_grid_path(building1_id, wall_direction1, bu
     let end = {cell_id: building2_id, wall_dir: wall_direction2};
     let end_str = JSON.stringify(end);
 
+    // console.log("start: ", start, "end: ", end);
+
     // intialize priority queue for dijkastra
     let pqueue = new TinyQueue([{item: start, priority: 0}], function (a, b) {
         return a.priority - b.priority;
@@ -754,6 +756,10 @@ function connect_building_cell_walls_grid_path(building1_id, wall_direction1, bu
 
     while (cur_str !== start_str) {
 
+        if (cur_str == null) {
+            break;
+        }
+
         let cur = null;
         try {
             cur = JSON.parse(cur_str);
@@ -774,6 +780,10 @@ function connect_building_cell_walls_grid_path(building1_id, wall_direction1, bu
     }
     wall_path.push(start);
     wall_path.reverse();
+
+    if (wall_path.length === 2 && wall_path[0].wall_dir === ordered_directions[(ordered_directions.indexOf(wall_path[1].wall_dir) + 2) % ordered_directions.length]) {
+        return [];
+    }
 
     // convert wall path to grid lines
     let wall_grid_lines = [];
@@ -1075,7 +1085,7 @@ function border_results_for_end_point(end_point_grid_coords, path_target_coords,
             let end_point_door = end_point_cell_info.building_data.entrances[i];
             let end_point_door_grid_coords = grid_coords_for_building_or_door(end_point_door);
 
-            let dist = calc_dist(end_point_door_grid_coords, path_target_coords);
+            let dist = calc_dist(end_point_door_grid_coords, end_point_grid_coords);
 
             if (dist < best_dist) {
                 best_dist = dist;

@@ -341,6 +341,15 @@ function init_grid_cell_info(building) {
         };
     }
 
+    init_building_connection_mods(cell_info);
+
+    return cell_info;
+}
+
+
+// initialize building connection mods
+function init_building_connection_mods(cell_info) {
+
     // initialize connection mods
     cell_info.building_mods.connection_mods = {};
     cell_info.building_mods.connection_mods[cell_info.building_data.id] = [];
@@ -364,21 +373,23 @@ function init_grid_cell_info(building) {
 
     // determine which building cells are adjacent
     let connected_building_ids = connected_building_coords.map(coords => grid_coords_to_building_id(grid_coords_for_building_or_door(coords)));
-    for (let i = 0; i < connected_building_coords.length; i++) {
-        let building_coords = connected_building_coords[i];
+    connected_building_ids.push(cell_info.building_data.id);
+
+    for (let i = 0; i < connected_building_ids.length; i++) {
         let building_id = connected_building_ids[i];
+        let building_coords = grid_coords_for_building_id(building_id);
 
         // check adjacency with all other connected buildings
-        for (let j = 0; j < connected_building_coords.length; j++) {
+        for (let j = 0; j < connected_building_ids.length; j++) {
             if (i === j) {
                 continue;
             }
             
-            let comp_building_coords = connected_building_coords[j];
             let comp_building_id = connected_building_ids[j];
+            let comp_building_coords = grid_coords_for_building_id(comp_building_id);
 
             if (coords_are_adjacent(building_coords, comp_building_coords)) {
-                cell_info.building_mods.connection_mods[building_id].push()
+                cell_info.building_mods.connection_mods[building_id].push(comp_building_id);
             }
 
         }
@@ -387,8 +398,6 @@ function init_grid_cell_info(building) {
     }
 
     cell_info.building_mods.connected_building_coords = connected_building_coords;
-
-    return cell_info;
 }
 
 
@@ -444,10 +453,8 @@ function merge_buildings(cell_info1, cell_info2, orig_merge_coords, new_merge_co
         building1.merged_y.push(connected_connected_building_coords.y);
     }
     
-    // combine connection mods for both buildings
-    for (let building_id in connection_mods2) {
-        connection_mods1[building_id] = connection_mods2[building_id];
-    }
+    // reinitialize connection mods
+    init_building_connection_mods(cell_info1);
 
     // combine doors from both buildings
     let door_counter = 0;
