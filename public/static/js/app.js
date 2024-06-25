@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // generate_graph(default_config);
 
     // load a preset graph
-    let preset = "graph_25_0.75.json"
+    let preset = "random_med.json"
     update_preset_select_display(preset)
     load_preset_graph(preset);
 
